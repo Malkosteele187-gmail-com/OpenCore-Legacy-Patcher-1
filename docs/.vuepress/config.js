@@ -69,7 +69,6 @@ module.exports = {
             children: [
 				'START',
 				'MODELS',
-				['BENIFITS', 'Benefits and drawbacks'],
             ]
 
         },
@@ -94,11 +93,20 @@ module.exports = {
 
         },
         {
+            title: 'macOS Ventura',
+            collapsable: false,
+            sidebarDepth: 1,
+            children: [
+				['VENTURA-DROP', 'macOS Ventura Support'],
+            ]
+        },      
+		  
+	{
             title: 'macOS Monterey',
             collapsable: false,
             sidebarDepth: 1,
             children: [
-				'MONTEREY-DROP',
+				['MONTEREY-DROP', 'macOS Monterey Support'],
             ]
         },
         {
@@ -113,6 +121,7 @@ module.exports = {
 				'UNINSTALL',
 				'ICNS',
 				'WINDOWS',
+				'UNIVERSALCONTROL',
             ]
         },
         {
@@ -130,6 +139,7 @@ module.exports = {
             collapsable: false,
             sidebarDepth: 1,
             children: [
+				'ISSUES-HOLD',
 				'TESTED',
 				'TERMS',
 				'HOW',

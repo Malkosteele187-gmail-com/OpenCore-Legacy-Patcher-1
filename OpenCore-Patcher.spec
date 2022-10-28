@@ -12,7 +12,7 @@ a = Analysis(['OpenCore-Patcher.command'],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
-             excludes=[],
+             excludes=['wxPython', 'wxpython'],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher,
@@ -35,10 +35,10 @@ exe = EXE(pyz,
           console=True )
 app = BUNDLE(exe,
          name='OpenCore-Patcher.app',
-         icon="payloads/OC-Patcher.icns",
-         bundle_identifier=None,
+         icon="payloads/OC-Patcher-TUI.icns",
+         bundle_identifier="com.dortania.opencore-legacy-patcher-tui",
          info_plist={
              "CFBundleShortVersionString": constants.Constants().patcher_version,
              "CFBundleExecutable": "MacOS/Launcher",
-             "NSHumanReadableCopyright": "Copyright 2020-2021 Dortania"
+             "NSHumanReadableCopyright": constants.Constants().copyright_date,
          })

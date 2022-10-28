@@ -1,12 +1,10 @@
 # How to debug with OpenCore
 
-For those who've hit an odd bug and unsure if it's user error or patcher, the below will tell you how to get more verbose debug information as well as logs to help [file issues with us](https://github.com/dortania/OpenCore-Legacy-Patcher/issues)
-
-* For users who are less experienced, we recommend asking on the [OpenCore Patcher Paradise Discord Server](https://discord.gg/rqdPgH8xSN) for help.
+For those who've hit an odd bug and unsure if it's user error or within the patcher, we recommend asking on the [OpenCore Patcher Paradise Discord Server](https://discord.gg/rqdPgH8xSN) for help.
 
 ## Debugging yourself
 
-The easiest way to debug yourself is via Patcher Settings. Here there are many different settings however the 3 main options that will help are:
+The easiest way to debug yourself is via Patcher Settings. Here there are many different settings, however, the 3 main options that will help are:
 
 * "Enable Verbose Mode"
 * "Enable OpenCore DEBUG"
@@ -36,7 +34,11 @@ From there, you'll have a log on your desktop.
 
 ## Filing an issue with us
 
-Now that you have proper logs, you can now [file issues with us](https://github.com/dortania/OpenCore-Legacy-Patcher/issues). Reminder we want the following info:
+::: warning
+Currently issues have been disabled due to [current events](ISSUES-HOLD.md). You can continue to receive support in the [OpenCore Patcher Paradise Discord Server](https://discord.gg/rqdPgH8xSN), where there are active members of the community available.
+:::
+
+Now that you have proper logs, you can now [file issues with us](https://github.com/dortania/OpenCore-Legacy-Patcher/issues). This is a reminder to include the following info:
 
 * Model patching for (ie. MacBookPro10,1)
 * Target OS (ie. macOS 11.2.3)

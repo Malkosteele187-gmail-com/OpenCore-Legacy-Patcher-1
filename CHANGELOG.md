@@ -1,9 +1,361 @@
 # OpenCore Legacy Patcher changelog
 
+## 0.5.2
+
+## 0.5.1
+- Add support for `APPLE SSD TS0128F/256F` SSDs in macOS Ventura
+  - ie. stock SSD found in MacBookAir6,x
+- Lax KDK N-1 logic to allow 1 minor version difference
+  - ex. Allow 13.0 KDK on 13.1
+- Clean out `/Library/Extensions` on KDK-less root patches
+  - Ensures old, incompatible kexts are not linked against
+  - Old kexts are relocated to `/Library/Relocated Extensions`
+- Add OpenCore Picker timeout selection
+- Partially resolve MacPro6,1 support
+  - Allows for install and usage of 2013 Mac Pros on Ventura
+  - Currently CPU Power Management is not supported
+
+## 0.5.0
+- Ventura Specific Updates:
+  - Switch boot.efi model patch to iMac18,1
+  - Resolve pre-Force Touch Trackpad support in Ventura
+  - Add Ventura-dropped Models:
+    - MacPro6,1
+    - Macmini7,1
+    - iMac16,x, iMac17,1
+    - MacBook9,1
+    - MacBookAir7,x
+    - MacBookPro11,4/5, MacBookPro12,1, MacBookPro13,x
+  - Add Ventura Software Catalog parsing
+  - Add Kernel Debug Kit checks to Ventura root patching
+  - Add USB map injection for dropped models
+  - Resolve Ethernet support on MacPro3,1-5,1
+  - Fix VMM patch set
+  - Allow dyld shared cache swapping on pre-Haswell
+  - Fix MouSSE/SSE4,2 emulation in macOS 13.0 Beta 3 (22A5295h)
+  - Graphics Acceleration for legacy Metal GPUs
+    - Intel: Ivy Bridge, Haswell, Broadwell and Skylake
+    - Nvidia: Kepler
+    - AMD: GCN 1 through 3
+    - AMD: Polaris (on pre-AVX2.0 systems)
+      - Boot in safe mode to avoid stock driver loading
+  - Raise SIP requirement to 0x803 for root patching
+  - Add Ventura Boot Picker icons
+  - Implement KDK-less root patching for Metal Intel and Nvidia GPUs
+    - AMD GCN will still require a KDK installed for patching
+  - Resolve OpenCL support for legacy Metal GPUs
+  - Implement Automatic Rosetta Cryptex installation on OS installs and updates
+    - Drops need for manual OS.dmg swapping on pre-Haswell
+  - Implement automatic Kernel Debug Kit downloader for systems requiring Boot/SysKC rebuilding
+    - ex. AMD GCN
+    - Relies on N-1 system for when matching KDK is not present
+  - Delete unused KDKs in `/Library/Developer/KDKs` during root patching
+  - Resolve Power Management support for Ivy Bridge and older
+  - Drop AMFI requirement for Nvidia Kepler and AMD GCN 1-3
+  - Resolve numerous AMD GCN 1-3 issues (ex. Photos.app, Screen Saver, etc.)
+  - Resolve dGPU support for MacBookPro13,3
+- Add work-around to Catalyst Buttons not responding on non-Metal in macOS Monterey
+- Re-export OpenCanopy icons to better support Haswell and newer Macs
+- Increment Binaries:
+  - OpenCorePkg 0.8.5 release
+  - Lilu 1.6.2 - release
+  - FeatureUnlock 1.0.9 release
+  - PatcherSupportPkg 0.7.1 - release
+  - BrcmPatchRAM 2.6.4 - release
+  - AutoPkgInstaller 1.0.1 - release
+  - CryptexFixup 1.0.1 - rolling (cf3a1e4)
+
+## 0.4.12
+
+## 0.4.11
+- Enable AppleMCEReporterDisabler whenever spoofing affected SMBIOS
+  - ie. iMacPro1,1, MacPro6,1 and MacPro7,1
+- Verify host's disk space before downloading macOS Installers
+- Remove duplicate OS builds in macOS downloader
+  - Avoids Apple's odd bug of publishing 2 different 12.5.1 products
+- Implement deeper macOS installer parsing
+  - Provides better version detection than Apple provides in .app
+- Ensure WhateverGreen is always installed on Mac Pro configurations
+- Resolve Safari 16 rendering in macOS 12.6
+- Increment Binaries:
+  - PatcherSupportPkg 0.5.4 - release
+- Add missing OpenCL resources for Nvidia GPUs
+
+## 0.4.10
+- Resolve Nvidia Kepler support in macOS 12.5 Beta 3 and newer
+- Increment Binaries:
+  - PatcherSupportPkg 0.5.2 - release
+
+## 0.4.9
+- Split Kepler userspace and kernel space patches
+  - Only installs kernel space patches on 12.5 and newer
+  - Avoids lock out of user, however breaks graphics acceleration
+  - Install 12.4 or older for full graphics acceleration on Kepler
+  - Reference: [macOS 12.5: Nvidia Kepler and WindowServer crashing #1004](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1004)
+
+## 0.4.8
+- Ensure Apple Silicon-specific installers are not listed
+  - ie. M2 specific build (21F2092)
+- Avoid adding OpenCore icon in boot picker if Windows bootloader on same partition
+- Add error-handling to corrupt/non-standard NVRAM variables
+- Add warning prompt when using 'Allow native models'
+  - Attempt to avoid misuse of option
+- Work-around `Failed to extract AssetData` during installer creation
+  - Apple bug, resolved by using CoW into a different directory than `/Applications`
+- Avoid listing beta installers in downloader
+- Warn about downloading macOS Ventura installers, unsupported by current patcher
+- Fix AppleGVA regression introduced in 0.4.6
+  - Applicable for Ivy Bridge-only systems
+
+## 0.4.7
+- Fix crashing on defaults parsing
+
+## 0.4.6
+- Fix Bluetooth support in 12.4 Release
+  - Applicable for BCM2046 and BCM2070 chipsets
+  - Fix backported to 0.4.5 release
+- GUI Enhancements:
+  - Greatly improve GUI load times (300-800% on average)
+  - Resolve failing to find new updates
+  - Implement Modal Sheets for longer windows
+    - Avoids UI elements getting under the dock
+  - Add return to disk when selecting partitions
+  - Add "Search for disks again" option during OpenCore Install
+  - Prevent Idle Sleep while running long processes (ie. downloading, flashing)
+  - Start OpenCore build automatically when entering Build menu
+  - Standardize Application Identifier for defaults
+- Resolve failing to find binaries with `--patch_sys_vol` argument
+- Downgrade AppleFSCompressionTypeZlib to 12.3.1 on pre-Sandy Bridge Macs
+  - Resolves ZLib decompression kernel panics on 12.4 and newer
+- Resolve AppleGVACore crashing on MacBookPro11,3 in Monterey 12.4+
+- Add Nvidia Web Driver support for Maxwell and Pascal
+  - Currently running in OpenGL mode, [non-Metal issues](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/108) applicable
+- Enable Beta Blur settings on non-Metal by default
+  - For slower hardware, disabling may slightly improve performance
+- Deprecate TUI support
+  - Users may still manually run from source for future builds
+  - Binaries will no longer be provided on future release
+
+## 0.4.5
+- Fix AutoPatcher.pkg download on releases
+  - Fix backported to 0.4.4 release binaries
+- Add Macmini8,1 FeatureUnlock support
+  - Drops CPU check, supports all machines
+- Refactor Root Patching System
+  - Adds preflight checks validating patch set data and presence
+  - Adds dynamic Sandy Bridge Board ID patching
+    - Allows for unrestricted SMBIOS usage with `AppleIntelSNBGraphicsFB`
+  - Adds OpenCL downgrade for TeraScale 2
+    - Resolves VNC support (credit IronApple#2711)
+  - Fix SecureBootModel detection
+- Add `OpenCore-Legacy-Patcher.plist` for applied patch info
+  - Located under `/System/Library/CoreServices`
+  - Lists patch sets applied including files installed and removed
+- Add `preinstall` script to AutoPatcher
+  - Removes old patcher files before installing new
+- Add Serial Number Spoofing
+  - For recycled machines where MDM was mistakenly left on
+- Add sys_patch file validation during CI
+- GUI Enhancements:
+  - Add GUI Prompt for booting mismatched OpenCore configs
+    - ex. Booting MacBookPro8,1 config on MacBookPro11,1
+  - Add Checksum verification to InstallAssistant.pkg download
+  - Fix showing latest 12.4 remote installers
+  - Add local Root Patcher version info when previously patched
+    - Helps notify users they already patched, or should be repatched with a newer version
+- Add error handling to non-standard/malformed OpenCore Boot Path
+- Non-Metal Enhancements:
+  - Add work-around to double clock bug introduced in macOS 12.4
+  - Resolve non-functioning Dismiss buttons bug introduced in macOS 12.4
+  - Refresh Status Bar when item length changes
+  - Add smoother transition for auto appearance
+- Increment Binaries:
+  - PatcherSupportPkg 0.4.1 - release
+
+## 0.4.4
+- Lower SIP requirement for Root Patching
+  - Sets to 0x802 (previously 0xA03)
+  - Drops `CSR_ALLOW_UNTRUSTED_KEXTS` and `CSR_ALLOW_UNAPPROVED_KEXTS`
+- Remember TeraScale 2 Setting on MacBookPro8,2/3
+  - Avoids requiring toggling after first time
+- Resolve Electron Crashing with SIP lowered on 12.3
+  - Adds `ipc_control_port_options=0` boot argument
+  - Unknown whether this is a "bug" or intentional from Apple, affects native Macs with SIP disabled
+- Resolved non-Metal issues:
+  - Catalyst crashing after 1200 seconds on non-Metal
+  - Automatic Light/Dark mode (credit @moosethegoose2213)
+  - Rim improvements
+  - Trackpad swipe between pages
+  - Cycle between windows
+  - Improve Display Preference pane Image
+  - Defaults prefix change (`ASB_` -> `MORAEA_`, reopen non-Metal Settings to apply)
+- Increment Binaries:
+  - PatcherSupportPkg 0.3.9 - release
+  - OpenCorePkg 0.8.0 - release
+  - FeatureUnlock 1.0.8 - release
+  - CPUFriend 1.2.5 - release
+  - WhateverGreen 1.5.8 - release
+  - AutoPkgInstaller 1.0.0 - release
+  - BlueToolFixup 2.6.2 - adjusted
+- Speed up loading available remote macOS Installers from Apple
+  - Skips writing catalogs to disk, loads into memory directly
+- Implement Automatic Patch Detection/Installation
+  - Requires GUI for usage
+  - Installations:
+    - During macOS Installer creating in-app, AutoPkg-Assets.pkg is installed to macOS installer
+    - After running the installer with AutoPkgInstaller.kext, Root Patcher will install patches
+    - Must boot macOS Installer, does not support in-OS usage
+  - Post OS Updates:
+    - After OS updates, Patcher will detect whether system requires root patches and prompt you
+    - Implemented via Launch Agent in `/Library/LaunchAgents`
+    - OpenCore-Patcher.app will be copied to `/Library/Application Support/Dortania` for storage
+  - Notify users when OpenCore is booted from external disk not matching macOS (ie. USB installer)
+    - Disable notification via `defaults write com.dortania.opencore-legacy-patcher AutoPatch_Notify_Mismatched_Disks -bool FALSE`
+- GUI Enhancements:
+  - Add Reboot Prompt after Root Patching
+  - Add Disk Installation Prompt after OpenCore Config Building
+  - Streamline GUI relaunch for Root Patch/Unpatch (remembering previous state during patching)
+  - Grey out return buttons while performing sensitive tasks
+  - Add `Currently Booted SIP` info to SIP Settings
+  - Add Disk Highlighting during Build/Install for previously installed disks
+  - Only list newest installers by default (reload to show older binaries)
+- Remove manual root unpatching
+  - Removed due to reliability issues
+  - `bless` based reversion still supported in Big Sur+
+- Remove Unofficial Mojave/Catalina Root Patching
+  - For TeraScale 2-based acceleration on older OSes, use v0.4.3
+- Simplify Binary options
+  - Removes Online Patcher Variants
+  - Offline variants are now new defaults, no longer retain `Offline` suffix
+- Resolve legacy Bluetooth Support on 12.4 Beta 3
+  - Disables USB Address erroring on some pre-Bluetooth 4.0 chipsets
+  - ex. `ERROR -- Third Party Dongle has the same address as the internal module`
+
+## 0.4.3
+- Increment Binaries:
+  - PatcherSupportPkg 0.3.4 - release
+  - OpenCorePkg 0.7.8 - release
+  - Lilu 1.6.0 - release
+  - WhateverGreen 1.5.7 - release
+  - FeatureUnlock 1.0.7 - rolling (6a87f65)
+- Resolve many non-Metal issues:
+  - Control Centre Sliders
+  - Shift/missing icons
+  - Hardware Cursor
+    - Note cursor images will be static (ie. beach ball)
+  - Quicklook dismiss/expand
+  - Keyboard Backlight
+    - Drops reliance on LabTick
+- Add Ethernet Controller detection to build
+- Resolve i210/i225 NIC support on pre-Ivy Macs
+- Resolve AirPlay to Mac support on Skylake+ Macs in 12.3 Beta 2+
+- Resolve SDXC support in Monterey for Pre-Ivy Bridge Macs
+- Rename Battery Throttling option to Firmware Throttling
+  - Expands support to desktops (ie. iMacs without Displays)
+- Add XCPM disabling
+  - Forces `ACPI_SMC_PlatformPlugin` to outmatch `X86PlatformPlugin`
+
+## 0.4.2
+- Resolve app crashing on some 3rd party SAS/SATA controllers
+- Add Beta identifier to macOS Installer menu
+- Resolve showing unsupported installers in Creation menu
+- Resolve Macmini4,1 HDEF pathing
+- Increment Binaries:
+  - FeatureUnlock 1.0.6 - rolling (d296645)
+  - PatcherSupportPkg 0.3.1
+- Resolve SIP and SecureBootModel not disabling by default on some non-Metal Mac Pros
+- Add Content Caching support configurability
+- Limit SurPlus patchset to 20.4.0 - 21.1.0
+  - No longer required for macOS 12.1 and newer
+- Add Universal Control support for Monterey native Macs
+  - Applicable for Haswell/Broadwell
+  - Requires macOS 12.3 or newer
+- Fix Power Management Support in macOS 12.3 Beta 1
+  - Applicable for Sandy Bridge and older
+  - Enforces ACPI_SMC_PlatformPlugin matching
+- Add NVMe Enhanced Power Management configuration
+  - Disables NVMe adjustments on Skylake and newer Macs by default
+- Resolve Catalyst Scrolling on non-Metal GPUs
+- Add new TUI icon to differentiate between GUI
+- Resolve Color Strobing on AMD TeraScale 2 GPUs
+  - Drops reliance on ResXtreme and SwitchResX
+
+## 0.4.1
+- Add XHCI Boot Support to pre-UEFI 2.0 Macs
+  - Applicable to pre-Ivy Macs with upgraded USB 3.0 controllers, allows USB 3.0 boot
+  - Credit to Jazzzny for testing, [DearthnVader for original research](https://forums.macrumors.com/threads/bootable-xhci-pci-e-for-the-3-1-experimental.2217479/)
+  - Drivers stripped from MacPro6,1 firmware
+- Resolve OCLP-Helper dyld crash
+
+## 0.4.0
+- Resolves Install USB Creation using incorrect installer
+- Resolves `installer` failing to extract InstallAssistant in older OSes
+- Resolves certain Samsung NVMe drives appearing as external on Mac Pros
+- Add FeatureUnlock configurability
+- Add NVRAM WriteFlash configurability for degraded/fragile systems
+- Add `ThirdPartyDrives` quirk configurability
+- Resolve Skylight dylib injection issue
+- Increment Binaries:
+  - OpenCore 0.7.7 - release
+  - RestrictEvents 1.0.6 - release
+  - FeatureUnlock 1.0.6 - rolling (1d0bc7b)
+  - WhateverGreen 1.5.6 - release
+  - Lilu 1.5.9 - release
+  - gfxutil 1.8.2b - release
+  - PatcherSupportPkg 0.2.9 - release
+- Re-add Content Caching support for VMM-spoofed systems
+- Add wxPython Based GUI
+  - Supersedes Obj-C Based GUI
+  - Both standard and offline builds provided
+- Allow optional spoofing on native Models
+  - Recommended for systems that cannot update their firmware natively (ie. dead internal drive)
+- Add Dropbox fix for non-Metal on Monterey
+- Add App Update checks to GUI
+  - If new version available, app will prompt on launch.
+  - Configurable in Developer Settings
+- Resolved OS crashing on slow Macs with FeatureUnlock
+- Disable Windows GMUX support by default
+  - Resolves brightness control issues on MacBookPro11,3 in Windows
+  - Configurable in Developer Settings
+- Add Commit Data to Info.plist
+
+## 0.3.3
+- Disable Asset Caching support with spoofless approach
+  - Switch to Minimal or higher if required
+
 ## 0.3.2
 - Implement spoofless support (ie. no SMBIOS patching)
   - Requires macOS 11.3 or newer, for 11.2.3 and older use Minimal or higher spoofing
   - See additional notes before updating: [VMM usage notes](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/543#issuecomment-953441283)
+- Adjust SIP setting to better reflect current SIP usage
+- Resolve Monterey Bluetooth issues on user-upgraded BCM94331 BT4.0 modules
+- Fix iGPU-only iMac14,x display output when using Minimal/Moderate spoof
+- Increment Binaries:
+  - OpenCore 0.7.6 - release
+  - Lilu 1.5.8 - release
+  - BrcmPatchRAM 2.6.1 - release
+  - WhateverGreen 1.5.5 - release
+  - PatcherSupportPkg 0.2.8 - release
+  - FeatureUnlock 1.0.5 - rolling (9cf1e81)
+- Fix AirPlay to Mac on macOS 12.1
+- Add macOS InstallAssistant downloader to TUI
+- Resolve rare memory corruption due to FeatureUnlock
+- Raise SurPlus MaxKernel to 21.99.99
+- Fix Content Caching with spoofless usage
+- Allow disabling of ConnectDrivers
+  - Aid with Hibernation on MacBookPro9,1/MacBookPro10,1
+- Add legacy iSight patch
+  - Applicable for MacBook4,1/5,2
+  - Affected Device IDs: 0x8300, 0x8501, 0x8503
+  - Credit to parrotgeek1 for LegacyUSBVideoSupport
+- Fix Wifi Password prompt in Monterey on legacy wifi
+  - Applicable for Atheros, BCM94328, BCM94322
+- Fix OpenCL Acceleration on Ivy Bridge and Kepler
+- Add Apple RAID Card support
+- Add Legacy GCN build support off model for MXM iMacs
+- Resolve 5k Display Output support on 5k iMacs and iMac Pro
+- Resolve NVMe Patching on 2016-2017 MacBook Pros
+- Enable Windows VMX support for Haswell and Broadwell MacBooks
 
 ## 0.3.1
 - Increment Binaries:
@@ -13,7 +365,7 @@
 - Allow for setting custom SIP values via TUI
 - Drop `CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE` requirement for root patching
   - Lowers default SIP Disabled value to 0xA03
-- Update Legacy GMUX patchset to latest Sierra Secuirty Update
+- Update Legacy GMUX patchset to latest Sierra security Update
   - [Source](https://github.com/HackintoshHD/mbp5x-instant-gpu-switching)
 - Fix non-Metal acceleration crashing on 12.0.1
   - Yes Apple adding a notch broke our accel patches
@@ -105,6 +457,7 @@
   - System Preferences will not report settings however
 - Allow Root Volume Patched Systems to use FileVault 2
   - Requires macOS 11.3 (20E232) or newer
+  - Unsupported on APFS ROM Patched Macs, revert to stock firmware to resolve
 - Add offline TUI build
   - Allows for root patching without network connection
 - Add Legacy Wireless support for Monterey
@@ -113,7 +466,7 @@
   - Applicable for BRCM2046 and BRCM2070 chipsets
 - Disable Library Validation allowing for AMFI usage
   - Remove reliance on amfi_get_out_of_my_way=1
-- Add Kepler Accleration Patches for Monterey Beta 7 and newer
+- Add Kepler Acceleration Patches for Monterey Beta 7 and newer
 - Add FirmwareFeature upgrading to all Models
   - Fixes Monterey Beta 7 installation issues
 - Add iMac7,1 USB map
@@ -177,7 +530,7 @@
   - RestrictEvents 1.0.3 rolling (3773ce2 - 06-20-2021)
   - SidecarFixup 1.0.2 rolling (2c29166 - 06-21-2021)
   - PatcherSupportPkg 0.0.18
-- Allow AirPlay to Mac support on Skylake - Coffeelake Macs
+- Allow AirPlay to Mac support on Skylake - Coffee Lake Macs
 
 ## 0.1.9
 
@@ -398,7 +751,7 @@
   - OpenCore 9cd61bb (0.6.8 rolling - 2021-03-27)
 - Add Mavericks and newer .app support
 - Refactor USB map building, fixes USB 3.0 displaying as USB 2.0
-- Fix blackscreen on MacBookPro9,1
+- Fix black screen on MacBookPro9,1
 - Update RestrictEvents with custom build (1.0.1)
   - Blocks `/usr/libexec/displaypolicyd` on MacBookPro9,1 to ensure smooth GPU switching
 - Add custom SD Card icon
