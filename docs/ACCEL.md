@@ -13,8 +13,9 @@
 * [Unable to allow Safari Extensions](#unable-to-allow-Safari-Extensions)
 * [Cannot Login on 2011 15" and 17" MacBook Pros](#cannot-login-on-2011-15-and-17-macbook-pros)
 * [Black Boxes on HD3000 iGPUs](#black-boxes-on-hd3000-igpus)
+* [Cannot Pair Bluetooth Devices](#cannot-pair-bluetooth-devices)
 
-The below page is for users experiencing issues with their overall usage of macOS Big Sur / macOS Monterey and the Legacy Graphics Acceleration patches. Note that the following GPUs currently do not have acceleration support in Big Sur / Monterey:
+The below page is for users experiencing issues with their overall usage of macOS Big Sur / Monterey / Ventura and the Legacy Graphics Acceleration patches. Note that the following GPUs currently do not have acceleration support in Big Sur / Monterey / Ventura:
 
 * Intel 3rd and 4th Gen - GMA series
 
@@ -22,7 +23,7 @@ For those unfamiliar with what is considered a non-Metal GPU, see the chart belo
 
 ::: details macOS GPU Chart
 
-Metal is Apple's in-house graphics API that acts as a replacement for OpenGL/OpenCL, introduced in 2015. With the release of macOS Mojave, every system without a Metal-capable GPU was dropped. 
+Metal is Apple's in-house graphics API that acts as a replacement for OpenGL/OpenCL, introduced in 2015. With the release of macOS Mojave, every system without a Metal-capable GPU was dropped.
 
 | Graphics Vendor | Architecture | Series | Supports Metal |
 | :--- | :--- | :--- | :--- |
@@ -30,7 +31,7 @@ Metal is Apple's in-house graphics API that acts as a replacement for OpenGL/Ope
 | ^^ | TeraScale 2 | HD5000 - HD6000 | ^^ |
 | AMD | GCN (and newer) | HD7000+ | <span style="color:green">Yes</span> |
 | NVIDIA | Tesla | 8000GT - GT300 |  <span style="color:red">No</span> |
-| ^^ | Fermi | GT400 - GT500 | ^^ | 
+| ^^ | Fermi | GT400 - GT500 | ^^ |
 | ^^ | Kepler | GT600 - GT700 | <span style="color:green">Yes</span> |
 | Intel | GMA | GMA900 - GMA3000 | <span style="color:red">No</span> |
 | ^^ | Iron Lake | HD series | ^^ |
@@ -101,11 +102,11 @@ Due to the Metal Backend, the enhanced color output of these apps seems to heavi
 
 ## Cannot press "Done" when editing a Sidebar Widget
 
-Workaround: Press some combination of Tab, or Tab and then Shift-Tab, or just Shift-Tab until the "Done" button is highlighted. Then press spacebar to activate the button, the same as in any other dialog with a highlighted button halo. 
+Workaround: Press some combination of Tab, or Tab and then Shift-Tab, or just Shift-Tab until the "Done" button is highlighted. Then press spacebar to activate the button, the same as in any other dialog with a highlighted button halo.
 
 ## Wake from sleep heavily distorted on AMD/ATI in macOS 11.3 and newer
 
-Unfortunately a very well known issue that the community is investigating. A currently known solution is to downgrade to macOS 11.2.3 or older until a proper fix can be found. Additionally logging out and logging in can resolve the issue without requiring a reboot.
+Unfortunately, this is a very well known issue that the community is investigating. A currently known solution is to downgrade to macOS 11.2.3 or older until a proper fix can be found. Additionally, logging out and logging back in can resolve the issue without requiring a reboot.
 
 * Note, this issue should be exclusive to TeraScale 1 GPUs (ie. HD2000-4000). TeraScale 2 GPUs should not exhibit this issue.
 
@@ -115,9 +116,9 @@ In the event Apple removes 11.2.3 from their catalogue, we've provided a mirror 
 
 ## Unable to switch GPUs on 2011 15" and 17" MacBook Pros
 
-Currently OpenCore Legacy Patcher, GPU switching between the iGPU and dGPU is broken. The simplest way to set a specific GPU is to disable the dGPU when you wish to remain on the more power efficient iGPU.
+Currently, with OpenCore Legacy Patcher, GPU switching between the iGPU and dGPU is broken. The simplest way to set a specific GPU is to disable the dGPU when you wish to remain on the more power efficient iGPU.
 
-The best way to achieve this is to boot Recovery (or Single User Mode if the dGPU refuses to function at all) and run the following command:
+The best way to achieve this is to boot to Recovery (or Single User Mode if the dGPU refuses to function at all) and run the following command:
 
 ```sh
 nvram FA4CE28D-B62F-4C99-9CC3-6815686E30F9:gpu-power-prefs=%01%00%00%00
@@ -156,14 +157,13 @@ The following tool can be used to work-around this issue:
 
 By default, OpenCore Legacy Patcher will assume MacBookPro8,2/3 have a faulty dGPU and disable acceleration. This is the safest option for most users as enabling dGPU acceleration on faulty Macs will result in failed booting.
 
-However if your machine does not have the dGPU disabled via NVRAM, you'll experience a login loop. To work around this is quite simple:
+However, if your machine does not have the dGPU disabled via NVRAM, you'll experience a login loop. To work around this is quite simple:
 
 1. Boot macOS in Single User Mode
     * Press Cmd+S in OpenCore's menu when you turn the Mac on
-2. When command line prompt appears, enter the dGPU disabler argument (at the bottom)
+2. When the command line prompt appears, enter the dGPU disabler argument (at the bottom)
 3. Reboot and patched macOS should work normally
-4. If you still want to use the dGPU, run OpenCore Legacy Patcher and enable TS2 Acceleration from settings. Then root patch your Mac again
-     `Patcher Settings -> Developer Settings -> Set TeraScale 2 Accel`
+4. If you still want to use the dGPU, run OpenCore Legacy Patcher and enable TS2 Acceleration from settings. Go to `Patcher Settings -> Developer Settings -> Set TeraScale 2 Accel`, then root patch again.
 5. Either Reset NVRAM or set `gpu-power-prefs` to zeros to re-enable the dGPU
 
 ```sh
@@ -179,8 +179,18 @@ A somewhat strange issue on Intel HD3000-based Macs, on 3rd party displays somet
 
 * Mainly applicable for HDMI Displays, DVI and DisplayPort are generally unaffected.
 * If you're inside Setup Assistant, press `Cmd` + `Option` + `Control` + `T` to launch Terminal. From there, run `open /System/Applications/System\ Preferences.app`
-
+* Issue has spread to more Macs with macOS Ventura, including MacBook Airs and MacBook Pros
 
 | Default Color Profile | Display/Display P3 Profile |
 | :---                  | :---                       |
 | ![](../images/HD3000-Default-Colors.png) | ![](../images/HD3000-Display-Colors.png) |
+
+## Cannot Pair Bluetooth Devices
+
+In macOS Ventura, hover states may not function correctly which results in the "Connect" button not appearing in System Settings. To resolve:
+
+1. Enable Keyboard Navigation in System Settings -> Keyboard
+2. Tab + space over Bluetooth devices in System Settings -> Bluetooth
+3. Pair button should appear
+
+For more information, see [ASentientBot's post](https://forums.macrumors.com/threads/macos-13-ventura-on-unsupported-macs-thread.2346881/page-116?post=31858759#post-31858759).

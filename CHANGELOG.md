@@ -1,6 +1,208 @@
 # OpenCore Legacy Patcher changelog
 
+## 0.6.3
+- Update non-Metal Binaries:
+  - Resolves Safari 16.4 rendering issue
+  - Resolves left side menubar selections
+  - Implements automatic menubar text color
+  - New Menubar implementation can be disabled via `defaults write -g Amy.MenuBar2Beta -bool false`
+- Implement full IOUSBHostFamily downgrade for UHCI/OHCI
+  - Resolves panics on certain iMac models
+- Resolve unused KDKs not being properly cleaned up
+- Implement MXM graphics handling for iMac9,1
+  - Credit to [Ausdauersportler](https://github.com/Ausdauersportler) for implementation
+- Backend changes:
+  - Use `.AppleSystemUIFont` for wxPython text rendering (thanks [jazzzny](https://github.com/Jazzzny))
+  - Add extra error handling for network errors
+    - Handles `RemoteDisconnected('Remote end closed connection without response')` exceptions
+  - Move root volume patch set generation to dedicated sys_patch_generate.py module
+- Increment Binaries:
+  - PatcherSupportPkg 0.9.2 - release
+
+## 0.6.2
+- Work around Black Box rendering issues on certain Display Color Profiles
+  - Limited to Ventura currently due to limitations with other color profiles
+  - Applicable for HD3000-based machines (ex. MacBookAir4,x, MacBookPro8,x, Macmini5,x)
+- Ensure `Moraea_BlurBeta` is set on non-Metal systems
+- Implement proper Root Unpatching verification in GUI
+  - Removes arbitrary patch requirements used against unpatching (ex. network connection)
+- Implement Kernel Debug Kit installation during OS installs
+  - Avoids network requirement for first time installs
+  - Paired along side AutoPkgInstaller
+- Implement Kernel Debug Kit backup system
+  - Allows for easy restoration of KDKs if OS updates corrupted installed KDKs
+- Update Wireless binaries
+  - Fixed WiFi preferences crash with legacy wifi patches
+- Update non-Metal Binaries
+  - Improved menubar blur saturation
+  - Fixed System Settings hover effects, including Bluetooth connect button
+  - Add Books hacks (reimplement cover image generation, disable broken page curl animation)
+  - Fixed unresponsive buttons
+- Implement Hardware Encoding support for AMD GCN 1-3, Polaris and Vega GPUs
+  - Applicable for pre-Haswell Macs on macOS Ventura
+  - Resolves DRM playback issues on Netflix, Disney+, etc.
+    - Note: GCN 1-3 DRM is functional, however hardware video encoding is still experimental
+      - AppleTV+ may be unstable due to this
+- Implement support for AMD Navi and Lexa MXM GPUs in 2009-2011 iMacs
+  - Primarily applicable for MXM 3.0 variants of AMD WX3200 (0x6981) and AMD RX5500XT (0x7340)
+  - Credit to [Ausdauersportler](https://github.com/Ausdauersportler) for implementation
+- Implement Continuity Camera Unlocking for pre-Kaby Lake CPUs
+  - Applicable for all legacy Macs in macOS Ventura
+- Resolve boot support for 3802-based GPUs with macOS 13.3
+  - Applicable for following GPUs:
+    - Intel Ivy Bridge and Haswell iGPUs
+    - Nvidia Kepler dGPUs
+  - Note: patchset now requires AMFI to be disabled, patchset still in active development to remove this requirement
+- Backend Changes:
+  - Refactored kdk_handler.py
+    - Prioritizes KdkSupportPkg repository for downloads
+      - Skips calls to Apple's now defunct Developer Portal API
+    - Support local loose matching when no network connection is available
+    - Implement pkg receipt verification to validate integrity of KDKs
+  - Implemented logging framework usage for more reliable logging
+    - Logs are stored under `~/Library/Logs/OpenCore-Patcher.log`
+    - Subsequent runs are appended to the log, allowing for easy debugging
+  - Implemented new network_handler.py module
+    - Allows for more reliable network calls and downloads
+    - Better supports network timeouts and disconnects
+    - Dramatically less noise in console during downloads
+  - Implemented new macOS Installer handler
+  - Removed unused modules:
+    - sys_patch_downloader.py
+    - run.py
+    - TUI modules
+- Build Server Changes:
+  - Upgrade Python backend to 3.10.9
+  - Upgrade Python modules:
+    - requests - 2.28.2
+    - pyobjc - 9.0.1
+    - wxpython - 4.2.0
+    - pyinstaller - 5.7.0
+    - packaging - 23.0
+- Increment Binaries:
+  - PatcherSupportPkg 0.8.7 - release
+  - AutoPkgInstaller 1.0.2 - release
+  - FeatureUnlock 1.1.4 - rolling (0e8d87f)
+  - Lilu 1.6.4 - release
+  - WhateverGreen 1.6.4 - release
+  - NVMeFix 1.1.0 - release
+  - Innie 1.3.1 - release
+  - OpenCorePkg 0.9.0 - release
+
+## 0.6.1
+- Avoid usage of KDKlessWorkaround on hardware not requiring it
+  - Resolves AMD Graphics Regression from 0.5.3
+- Increment Binaries:
+  - KDKlessWorkaround 1.0.0 - rolling (8e41f39)
+
+## 0.6.0
+- Resolve external NVMe reporting regression from 0.5.2
+- Implement Legacy Wireless support for Ventura
+  - Applicable for BCM94328, BCM94322 and Atheros chipsets
+- Implement Wifi-only patches when no internet connection available but required (ie. KDKs)
+  - Allows users to install Legacy Wireless patches, then connect to the internet to install remaining patches
+- Resolve `/Library/Extensions` not being cleaned on KDK-less root patches
+- Add AMD Vega Graphics support for pre-AVX2.0 systems on Ventura
+  - ex. AMD Vega 56 and 64, AMD Radeon VII
+  - Note: As with Polaris, Vega GPUs cannot be mixed with AMD GCN 1-3 patches
+    - Patcher will prioritize the AMD GCN 1-3 (assumption that GCN is primary GPU, ex. MacPro6,1)
+- Implement proper `APPLE SSD TS0128F/256F` detection
+  - Allows all Macs to utilize patch if required
+  - Avoids usage of patch when host lacks affected drive (ex. MacBookAir6,x with upgraded SSD)
+- Prompt with auto patcher when booted OpenCore is out of date to root patcher
+  - ex. Booted OCLP is 0.5.2, root patcher is 0.5.3
+- Disable native AMD Graphics on pre-Haswell Macs in Ventura
+  - Allows for easy root patching, dropping reliance on Safe Mode to boot
+  - Primarily applicable for iMacs and Mac Pros with AMD Polaris and Vega GPUs
+- Implement mini validation during GUI build
+- Add early UHCI/OHCI support (USB1.1)
+  - Implemented via Root Volume patching, ie. no installer support at this time
+    - Support should be seen as experimental, especially for laptops
+  - Applicable for Penryn Macs and Cheese Grater Mac Pros (MacPro3,1 - MacPro5,1)
+  - See associated issue for current limitations: [Legacy UHCI/OHCI support in Ventura](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1021)
+    - USB 3.0 controllers cannot be used along side USB 1.1 patches, OCLP will prioritize USB 3.0 support
+- Add early non-Metal Graphics Acceleration support for macOS Ventura
+  - Applicable for following GPU architectures:
+    - Intel Ironlake and Sandy Bridge
+    - Nvidia Tesla, Maxwell and Pascal
+    - AMD TeraScale 1 and 2
+  - Notes:
+    - Bluetooth Pairing is currently semi-functional, see here for work around: [Tab+Space work-around](https://forums.macrumors.com/threads/macos-13-ventura-on-unsupported-macs-thread.2346881/post-31858759)
+    - AMFI currently needs to be outright disabled in Ventura
+- Overall non-Metal improvements:
+  - Improved fake rim
+  - Fixed full screen animation
+  - Fixed split screen
+  - Improved menubar blur
+- Add Nvidia Kepler GOP Driver injection
+  - Primarily for GPUs lacking GOPs and can't have a newer VBIOS flashed
+- Resolve Rapid Security Response support for Haswell+ Macs requiring KDKs
+  - Implemented via:
+    - Userspace: [RSRRepair](https://github.com/flagersgit/RSRRepair) at `/etc/rc.server` (2b1c9e3)
+    - Kernelspace: [RSRHelper.kext](https://github.com/khronokernel/RSRHelper) (cbe1be9)
+- Add APFS Trim Configuration
+  - Settings -> Misc Settings -> APFS Trim
+- Increment Binaries:
+  - OpenCorePkg 0.8.8 - release
+  - PatcherSupportPkg 0.8.2 - release
+  - KDKlessWorkaround 1.0.0 - rolling (4924276)
+  - FeatureUnlock 1.1.2 - release
+  - CPUFriend 1.2.6 - release
+  - Lilu 1.6.3 - release
+
+## 0.5.3
+- Integrate FixPCIeLinkrate.efi v0.1.0
+  - Fixes link rate for PCIe 3.0 devices on MacPro3,1
+- Resolve AppleIntelCPUPowerManagement Panic in Safe Mode
+  - Applicable for pre-Haswell Macs on Ventura
+- Revert AppleALC 1.7.6 update back to 1.6.3
+  - Resolves audio issues on certain Intel HDEF devices
+  - Regression currently being investigated within AppleALC
+- Remove `Force Web Drivers` option
+  - Avoids accidental use of non-Metal Web Drivers on Kepler GPUs
+- Resolve silent auto patcher crash when new OCLP version is available
+- Implement [`py_sip_xnu`](https://github.com/khronokernel/py_sip_xnu) module
+- Resolve Content Caching Patch Regression
+- Resolve KDK Versioning Fallback crashing when primary KDK site is down
+- Resolve AirPlay to Mac support on Ventura with VMM
+- Resolve WindowServer crashing on KDK-less with macOS 13.2 and Rapid Security Response updates
+- Resolve Host Versioning when RSR is installed
+- Resolve iMac7,1-8,1 and MacBookPro4,1 boot support in Ventura
+- Increment Binaries:
+  - OpenCorePkg 0.8.7 - release
+  - FeatureUnlock 1.1.2 - rolling (94e29ce)
+  - WhateverGreen 1.6.2 - release
+
 ## 0.5.2
+- Ventura Specific Updates:
+  - Resolve AMD Polaris external display output support
+    - AMD Polaris and legacy GCN cannot be mixed in the same system
+      - Legacy GCN support will be prioritized when both are present
+      - AMD Polaris GPU can still be used headless for rendering with legacy GCN (ex. [macOS: Prefer External GPU option](https://support.apple.com/en-ca/HT208544))
+  - Disables unsupported `mediaanalysisd` on Metal 1 GPUs
+    - Alleviates kernel panic when on prolonged idle
+  - Automatically remove unsupported News Widgets on Ivy Bridge and Haswell iGPUs
+    - Alleviates Notification Centre Crashing
+  - Implement downloading from Kernel Debug Kit Backup Repository
+    - Alleviates issues with Apple blocking KDK downloads from OCLP (Ref: [Issue #1016](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1016))
+- Work-around MacPro6,1 and Lilu race condition
+  - Ensure Model and Board ID are set correctly before Lilu loads
+- Publish Application Version in UI header
+  - Allows for easier identification of version when reporting issues
+- Drop usage of `HW_BID` rerouting in boot.efi
+  - Patch out PlatformSupport.plist instead, allows for less maintenance overall
+- Add support for AMD GOP injection (AMDGOP.efi)
+  - For MXM iMacs and Mac Pros with GPU VBIOS lacking GOP support (ie. no UEFI output even after OC loads)
+- Hide OpenCore Boot Picker when waking from hibernation
+- Increment Binaries:
+  - AirPortBrcmFixup 2.1.6 - release
+  - AppleALC 1.7.6 - release
+  - CryptexFixup 1.0.1 - release
+  - DebugEnhancer 1.0.7 - release
+  - FeatureUnlock 1.1.0 - release
+  - OpenCorePkg 0.8.7 - rolling (fcb4e33)
+  - RestrictEvents 1.0.9 - release
+  - WhateverGreen 1.6.1 - release
 
 ## 0.5.1
 - Add support for `APPLE SSD TS0128F/256F` SSDs in macOS Ventura

@@ -1,3 +1,4 @@
+
 # Universal Control on unsupported Macs
 
 Introduced in macOS 12 Monterey, Universal Control is a feature that allows a Mac to control other Macs and/or iPads, share input devices, and share files across them simultaneously. With OpenCore and FeatureUnlock, Universal Control can be unlocked for most unsupported Macs, as long as they meet the technical requirements listed on this page.
@@ -28,7 +29,7 @@ Technical requirements:
 * iPadOS 15.4 or newer (if applicable)
 * OpenCore Legacy Patcher 0.4.3 or newer
 
-Check the [table of models](#table-of-models) below to see whether you need to upgrade hardware and exactly what hardware is required to be changed based on the offending Macs listed. For help on how to upgrade the Wi-Fi card in older 2008-2011 models, refer to the Discord channel [#hardware](https://discord.gg/rqdPgH8xSN) if required.
+Check the [table of models](#table-of-models) below to see whether you need to upgrade hardware and exactly what hardware is required to be changed based on the offending Macs listed. For help on how to upgrade the Wi-Fi card in older 2008-2011 models, refer to the `#hardware` channel in the [Discord server](https://discord.gg/rqdPgH8xSN) if required.
 
 
 
@@ -202,18 +203,57 @@ Before we continue, please keep in mind that SMBIOS Spoofing is an advanced feat
 
 ### How to spoof
 
-Firstly, run the GUI version of OpenCore Legacy Patcher, go to **Settings** and tick **Allow native models**.
+Ventura has dropped more models which includes all of the blacklisted Macs in question, making the procedure slightly different. It is important to follow the guide for the version you're on, failing to do so is likely to cause boot issues.
 
-**Note:** Unless you are building OpenCore on a different machine than it's targeted for, **do not** change the model in the main settings view. It is important to understand that OCLP targets this model regardless of what you may have spoofed to, as your Mac is still what the Native SMBIOS shows.
+::: details macOS Ventura
 
-Secondly, go to **SMBIOS Settings**, tick **Allow Native Spoofs**, set SMBIOS Spoof Level to **Moderate**. Set SMBIOS Spoof Model to **one listed next to your native model in the table for spoofed models below.**
+Firstly run the GUI version of OpenCore Legacy Patcher. 
+
+Then go to **Settings**, go to **SMBIOS Settings**, set SMBIOS Spoof Level to **Moderate**. Set SMBIOS Spoof Model **one listed next to your native model in the table for spoofed models below.**
+
+Notice that "Allow native models" and "Allow Native Spoofs" **are NOT** enabled unlike on Monterey, this is on purpose. They are no longer relevant on Ventura and enabling them will cause boot issues.
+
+| Main Settings view | SMBIOS settings |
+| :--- | :--- |
+| ![](../images/ventura_uc1.png) | ![](../images/ventura_uc2.png) |
+
+
+
+::: details Table for spoofed models (click to expand)
+
+Spoofing to any model with native Ventura support should work, but these are the earliest Macs natively supported by Ventura and thus chosen for the sake of simplicity.
+
+**Reminder:** Macs that are not listed on this table work without spoofing, including systems that do not natively support Ventura as long as the other requirements are met, since they aren't blacklisted.
+
+
+| Mac by name | Native SMBIOS | Spoof SMBIOS | Tested | Tested by |
+|-------------|---------------|--------------|--------|-----------|
+| MacBook Air Early 2015 11" / 13" | MacBookAir7,x | MacBookAir8,1 | <span style="color:red"> NO </span> | N/A |
+| MacBook Pro Early 2015 13" | MacBookPro12,x | MacBookPro14,1 | ^^ | ^^ |
+| MacBook Pro Mid 2015 15" | MacBookPro11,4 / 11,5 | MacBookPro14,3 | ^^ | ^^
+| iMac Late 2015 21" | iMac16,x | iMac18,2 | ^^ | ^^
+| Mac mini Late 2014  | Macmini7,x | MacMini8,1 | <span style="color:red"> NO </span> | N/A |
+| Mac Pro Late 2013 | MacPro6,x | MacPro7,1 | <span style="color:red"> NO </span> | N/A |
+
+:::
+
+::: details macOS Monterey
+
+Firstly, run the GUI version of OpenCore Legacy Patcher. Secondly, go to **Settings** and tick **Allow native models**.
+
+Then, go to **SMBIOS Settings**, tick **Allow Native Spoofs**, set SMBIOS Spoof Level to **Moderate**. Set SMBIOS Spoof Model to **one listed next to your native model in the table for spoofed models below.**
+
+
+| Main Settings view | SMBIOS settings |
+| :--- | :--- |
+| ![](../images/OCLP-allow-native-models.png) | ![](../images/OCLP-smbios-settings.png) |
 
 
 ::: details Table for spoofed models (click to expand)
 
 Any model after the list of officially blacklisted Macs should be supported, but these are the earliest Macs with Universal Control support, and thus chosen for the sake of simplicity.
 
-**Reminder:** Macs that are not listed on this table work without spoofing, including systems that do not natively support Monterey as long as the other requirements are met, since they aren't blacklisted.
+**Reminder:** Macs that are not listed on this table work without spoofing, including systems that do not natively support Monterey, as long as the other requirements are met, since they aren't blacklisted.
 
 
 | Mac by name | Native SMBIOS | Spoof SMBIOS | Tested | Tested by |
@@ -227,12 +267,9 @@ Any model after the list of officially blacklisted Macs should be supported, but
 
 :::
 
-| Main Settings view | SMBIOS settings |
-| :--- | :--- |
-| ![](../images/OCLP-allow-native-models.png) | ![](../images/OCLP-smbios-settings.png) |
+**Note:** Unless you are building OpenCore on a different machine than it's targeted for, **do not** change the model in the main settings view. It is important to understand that OCLP targets this model regardless of what you may have spoofed to, as your Mac is still what the Native SMBIOS shows.
 
-
-Build and install OpenCore again, and reboot back to the OS. Enable Universal Control as explained in the [Enabling Universal Control section.](#enabling-universal-control)
+Lastly, Build and install OpenCore again, and reboot back to the OS. Enable Universal Control as explained in the [Enabling Universal Control section.](#enabling-universal-control)
 
 
 

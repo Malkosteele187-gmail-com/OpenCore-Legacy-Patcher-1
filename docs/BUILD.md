@@ -1,6 +1,6 @@
 # Building and installing OpenCore
 
-Now that we have a macOS installer, lets now build our OpenCore configuration!
+Now that we have a macOS installer, let's now build our OpenCore configuration!
 
 If you haven't downloaded OpenCore Patcher yet, do so now:
 
@@ -9,6 +9,11 @@ If you haven't downloaded OpenCore Patcher yet, do so now:
 Next, run the `OpenCore-Patcher.app`:
 
 ![](../images/OCLP-GUI-Main-Menu.png)
+
+::: warning
+OpenCore configurations are hardware specific.
+If you're building OpenCore for a different model than you're currently running, it is absolutely necessary to select the proper model from Settings.
+:::
 
 Here we'll select Build and Install OpenCore and start building:
 

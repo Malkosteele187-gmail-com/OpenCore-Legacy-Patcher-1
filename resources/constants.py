@@ -1,6 +1,6 @@
 # pylint: disable=multiple-statements
-# Define Files
-# Copyright (C) 2020-2022, Dhinak G, Mykola Grymalyuk
+# Defines versioning, file paths and other settings for the patcher
+# Copyright (C) 2020-2023, Dhinak G, Mykola Grymalyuk
 
 from pathlib import Path
 from typing import Optional
@@ -10,205 +10,221 @@ from data import os_data
 
 
 class Constants:
-    def __init__(self):
+    def __init__(self) -> None:
         # Patcher Versioning
-        self.patcher_version = "0.5.2"  # OpenCore-Legacy-Patcher
-        self.patcher_support_pkg_version = "0.7.1"  #  PatcherSupportPkg
-        self.url_patcher_support_pkg = "https://github.com/dortania/PatcherSupportPkg/releases/download/"
-        self.nightly_url_patcher_support_pkg = "https://nightly.link/dortania/PatcherSupportPkg/workflows/build/master/"
-        self.discord_link = "https://discord.gg/rqdPgH8xSN"
-        self.guide_link = "https://dortania.github.io/OpenCore-Legacy-Patcher/"
-        self.repo_link = "https://github.com/dortania/OpenCore-Legacy-Patcher"
-        self.repo_link_latest = f"{self.repo_link}/releases/tag/{self.patcher_version}"
-        self.copyright_date = "Copyright © 2020-2022 Dortania"
-        self.installer_pkg_url = f"{self.repo_link}/releases/download/{self.patcher_version}/AutoPkg-Assets.pkg"
-        self.installer_pkg_url_nightly = "http://nightly.link/dortania/OpenCore-Legacy-Patcher/workflows/build-app-wxpython/main/AutoPkg-Assets.pkg.zip"
+        self.patcher_version:                 str = "0.6.3"  # OpenCore-Legacy-Patcher
+        self.patcher_support_pkg_version:     str = "0.9.2"  # PatcherSupportPkg
+        self.copyright_date:                  str = "Copyright © 2020-2023 Dortania"
+
+        # URLs
+        self.url_patcher_support_pkg:         str = "https://github.com/dortania/PatcherSupportPkg/releases/download/"
+        self.discord_link:                    str = "https://discord.gg/rqdPgH8xSN"
+        self.guide_link:                      str = "https://dortania.github.io/OpenCore-Legacy-Patcher/"
+        self.repo_link:                       str = "https://github.com/dortania/OpenCore-Legacy-Patcher"
+        self.installer_pkg_url:               str = f"{self.repo_link}/releases/download/{self.patcher_version}/AutoPkg-Assets.pkg"
+        self.installer_pkg_url_nightly:       str = "http://nightly.link/dortania/OpenCore-Legacy-Patcher/workflows/build-app-wxpython/main/AutoPkg-Assets.pkg.zip"
 
         # OpenCore Versioning
         # https://github.com/acidanthera/OpenCorePkg
-        self.opencore_commit = "c14b2ab - 10-04-2022"
-        self.opencore_version = "0.8.5"
+        self.opencore_commit:  str = "e4f0ba1 - 03-06-2023"
+        self.opencore_version: str = "0.9.0"
 
         # Kext Versioning
         ## Acidanthera
         ## https://github.com/acidanthera
-        self.lilu_version = "1.6.2"  #               Lilu
-        self.whatevergreen_version = "1.5.8"  #      WhateverGreen
-        self.airportbcrmfixup_version = "2.1.3"  #   AirPortBrcmFixup
-        self.nvmefix_version = "1.0.9"  #            NVMeFix
-        self.applealc_version = "1.6.3"  #           AppleALC
-        self.restrictevents_version = "1.0.6"  #     RestrictEvents
-        self.restrictevents_mbp_version = "1.0.6"  # RestrictEvents blocking displaypolicyd (see RestrictEvents-MBP91.patch)
-        self.featureunlock_version = "1.0.9"  #      FeatureUnlock
-        self.debugenhancer_version = "1.0.4"  #      DebugEnhancer
-        self.cpufriend_version = "1.2.5"  #          CPUFriend
-        self.bluetool_version = "2.6.4"  #           BlueToolFixup (BrcmPatchRAM)
-        self.cslvfixup_version = "2.6.1"  #          CSLVFixup
-        self.autopkg_version = "1.0.1"  #            AutoPkgInstaller
-        self.cryptexfixup_version = "1.0.1"  #       CryptexFixup
+        self.lilu_version:               str = "1.6.4"  #      Lilu
+        self.whatevergreen_version:      str = "1.6.4"  #      WhateverGreen
+        self.whatevergreen_navi_version: str = "1.6.4-Navi"  # WhateverGreen (Navi Patch)
+        self.airportbcrmfixup_version:   str = "2.1.6"  #      AirPortBrcmFixup
+        self.nvmefix_version:            str = "1.1.0"  #      NVMeFix
+        self.applealc_version:           str = "1.6.3"  #      AppleALC
+        self.restrictevents_version:     str = "1.0.9"  #      RestrictEvents
+        self.featureunlock_version:      str = "1.1.4"  #      FeatureUnlock
+        self.debugenhancer_version:      str = "1.0.7"  #      DebugEnhancer
+        self.cpufriend_version:          str = "1.2.6"  #      CPUFriend
+        self.bluetool_version:           str = "2.6.4"  #      BlueToolFixup (BrcmPatchRAM)
+        self.cslvfixup_version:          str = "2.6.1"  #      CSLVFixup
+        self.autopkg_version:            str = "1.0.2"  #      AutoPkgInstaller
+        self.cryptexfixup_version:       str = "1.0.1"  #      CryptexFixup
 
         ## Apple
         ## https://www.apple.com
-        self.marvel_version = "1.0.1"  #       MarvelYukonEthernet
-        self.nforce_version = "1.0.1"  #       nForceEthernet
-        self.piixata_version = "1.0.1"  #      AppleIntelPIIXATA
-        self.fw_kext = "1.0.1"  #              IOFireWireFamily
-        self.apple_trackpad = "1.0.1"  #       AppleUSBTrackpad
-        self.apple_isight_version = "1.0.0"  # AppleiSight
-        self.apple_raid_version = "1.0.0"  #   AppleRAIDCard
-        self.apfs_zlib_version = "12.3.1"  #   NoAVXFSCompressionTypeZlib
-        self.apfs_zlib_v2_version = "12.6"  #  NoAVXFSCompressionTypeZlib (patched with AVXpel)
-        self.multitouch_version = "1.0.0"  #   AppleUSBMultitouch
-        self.topcase_version = "1.0.0"  #      AppleUSBTopCase
-        self.intel_82574l_version = "1.0.0" #  Intel82574L
-        self.intel_8254x_version = "1.0.0" #   AppleIntel8254XEthernet
-        self.apple_usb_11_injector = "1.0.0" # AppleUSBUHCI/OHCI
-        self.aicpupm_version = "1.0.0" #       AppleIntelCPUPowerManagement/Client
+        self.marvel_version:        str = "1.0.1"  #  MarvelYukonEthernet
+        self.nforce_version:        str = "1.0.1"  #  nForceEthernet
+        self.piixata_version:       str = "1.0.1"  #  AppleIntelPIIXATA
+        self.fw_kext:               str = "1.0.1"  #  IOFireWireFamily
+        self.apple_trackpad:        str = "1.0.1"  #  AppleUSBTrackpad
+        self.apple_isight_version:  str = "1.0.0"  #  AppleiSight
+        self.apple_raid_version:    str = "1.0.0"  #  AppleRAIDCard
+        self.apfs_zlib_version:     str = "12.3.1"  # NoAVXFSCompressionTypeZlib
+        self.apfs_zlib_v2_version:  str = "12.6"  #   NoAVXFSCompressionTypeZlib (patched with AVXpel)
+        self.multitouch_version:    str = "1.0.0"  #  AppleUSBMultitouch
+        self.topcase_version:       str = "1.0.0"  #  AppleUSBTopCase
+        self.intel_82574l_version:  str = "1.0.0"  #  Intel82574L
+        self.intel_8254x_version:   str = "1.0.0"  #  AppleIntel8254XEthernet
+        self.apple_usb_11_injector: str = "1.0.0"  #  AppleUSBUHCI/OHCI
+        self.aicpupm_version:       str = "1.0.0"  #  AppleIntelCPUPowerManagement/Client
 
         ## Apple - Dortania Modified
-        self.bcm570_version = "1.0.2"  #             CatalinaBCM5701Ethernet
-        self.i210_version = "1.0.0"  #               CatalinaIntelI210Ethernet
-        self.corecaptureelcap_version = "1.0.1"  #   corecaptureElCap
-        self.io80211elcap_version = "2.0.0"  #       IO80211ElCap
-        self.bigsursdxc_version = "1.0.0"  #         BigSurSDXC
-        self.monterey_ahci_version = "1.0.0"  #      CatalinaAHCI
+        self.bcm570_version:           str = "1.0.2"  # CatalinaBCM5701Ethernet
+        self.i210_version:             str = "1.0.0"  # CatalinaIntelI210Ethernet
+        self.corecaptureelcap_version: str = "1.0.1"  # corecaptureElCap
+        self.io80211elcap_version:     str = "2.0.0"  # IO80211ElCap
+        self.bigsursdxc_version:       str = "1.0.0"  # BigSurSDXC
+        self.monterey_ahci_version:    str = "1.0.0"  # CatalinaAHCI
 
         ## Dortania
         ## https://github.com/dortania
-        self.backlight_injector_version = "1.1.0"  # BacklightInjector
-        self.smcspoof_version = "1.0.0"  #           SMC-Spoof
-        self.mce_version = "1.0.0"  #                AppleMCEReporterDisabler
-        self.btspoof_version = "1.0.0"  #            Bluetooth-Spoof
-        self.aspp_override_version = "1.0.1"  #      ACPI_SMC_PlatformPlugin Override
+        self.backlight_injector_version:  str = "1.1.0"  # BacklightInjector
+        self.backlight_injectorA_version: str = "1.0.0"  # BacklightInjector (iMac9,1)
+        self.smcspoof_version:            str = "1.0.0"  # SMC-Spoof
+        self.mce_version:                 str = "1.0.0"  # AppleMCEReporterDisabler
+        self.btspoof_version:             str = "1.0.0"  # Bluetooth-Spoof
+        self.aspp_override_version:       str = "1.0.1"  # ACPI_SMC_PlatformPlugin Override
+        self.rsrhelper_version:           str = "1.0.0"  # RSRHelper
 
         ## Syncretic
         ## https://forums.macrumors.com/members/syncretic.1173816/
         ## https://github.com/reenigneorcim/latebloom
-        self.mousse_version = "0.95-Dortania"  # MouSSE
-        self.telemetrap_version = "1.0.0"  #     telemetrap
+        self.mousse_version:     str = "0.95-Dortania"  # MouSSE
+        self.telemetrap_version: str = "1.0.0"  #         telemetrap
 
         ## cdf
         ## https://github.com/cdf/Innie
-        self.innie_version = "1.3.0"  # Innie
+        self.innie_version: str = "1.3.1"  # Innie
 
         ## arter97
         ## https://github.com/arter97/SimpleMSR/
-        self.simplemsr_version = "1.0.0"  # SimpleMSR
+        self.simplemsr_version: str = "1.0.0"  # SimpleMSR
 
         ## blackgate
         ## https://github.com/blackgate/AMDGPUWakeHandler
-        self.gpu_wake_version = "1.0.0"
+        self.gpu_wake_version: str = "1.0.0"
+
+        ## flagersgit
+        ## https://github.com/flagersgit/KDKlessWorkaround
+        self.kdkless_version: str = "1.0.0"
 
         # Get resource path
-        self.current_path = Path(__file__).parent.parent.resolve()
-        self.payload_path = self.current_path / Path("payloads")
+        self.current_path: Path = Path(__file__).parent.parent.resolve()
+        self.payload_path: Path = self.current_path / Path("payloads")
 
         # Patcher Settings
-        self.allow_oc_everywhere = False  # Set whether Patcher can be run on unsupported Macs
-        self.gui_mode = False  #            Determine whether running in a GUI or TUI
-        self.disk = ""  #                   Set installation ESP
-        self.patch_disk = ""  #             Set Root Volume to patch
-        self.validate = False  #            Enable validation testing for CI
-        self.recovery_status = False  #     Detect if booted into RecoveryOS
-        self.launcher_binary = None #       Determine launch binary (ie. Python vs PyInstaller)
-        self.launcher_script = None  #      Determine launch file (if run via Python)
-        self.ignore_updates = False  #      Ignore OCLP updates
-        self.wxpython_variant = False #     Determine if using wxPython variant
-        self.unpack_thread = None  #        Determine if unpack thread finished
-        self.cli_mode = False  #            Determine if running in CLI mode
-        self.should_nuke_kdks = True  #       Determine if KDKs should be nuked if unused in /L*/D*/KDKs
+        ## Internal settings
+        self.allow_oc_everywhere:       bool = False  # Set whether Patcher can be run on unsupported Macs
+        self.gui_mode:                  bool = False  # Determine whether running in a GUI or TUI
+        self.cli_mode:                  bool = False  # Determine if running in CLI mode
+        self.validate:                  bool = False  # Enable validation testing for CI
+        self.recovery_status:           bool = False  # Detect if booted into RecoveryOS
+        self.ignore_updates:            bool = False  # Ignore OCLP updates
+        self.wxpython_variant:          bool = False  # Determine if using wxPython variant
+        self.has_checked_updates:       bool = False  # Determine if check for updates has been run
+        self.root_patcher_succeeded:    bool = False  # Determine if root patcher succeeded
+        self.start_build_install:       bool = False  # Determine if build install should be started
+        self.host_is_non_metal:         bool = False  # Determine if host is non-metal (ie. enable UI hacks)
+        self.needs_to_open_preferences: bool = False  # Determine if preferences need to be opened
+        self.host_is_hackintosh:        bool = False  # Determine if host is Hackintosh
+        self.should_nuke_kdks:          bool = True  #  Determine if KDKs should be nuked if unused in /L*/D*/KDKs
+        self.launcher_binary:            str = None  #  Determine launch binary path (ie. Python vs PyInstaller)
+        self.launcher_script:            str = None  #  Determine launch file path   (None if PyInstaller)
+        self.booted_oc_disk:             str = None  #  Determine current disk OCLP booted from
+        self.unpack_thread                   = None  #  Determine if unpack thread finished (threading.Thread)
+
+        self.commit_info: tuple = (None, None, None)  # Commit info (Branch, Commit Date, Commit URL)
 
         ## Hardware
         self.computer: device_probe.Computer = None  # type: ignore
-        self.custom_model: Optional[str] = None
+        self.custom_model:     Optional[str] = None
 
         ## OpenCore Settings
-        self.opencore_debug = False
-        self.opencore_build = "RELEASE"
-        self.showpicker = True  #  Show or Hide OpenCore's Boot Picker
-        self.boot_efi = False  #   Use EFI/BOOT/BOOTx64.efi bootstrap
-        self.nvram_write = True  # Write to hardware NVRAM
+        self.opencore_debug: bool = False # Enable OpenCore debug
+        self.boot_efi:       bool = False # Use EFI/BOOT/BOOTx64.efi vs boot.efi bootstrap
+        self.showpicker:     bool = True  # Show or Hide OpenCore's Boot Picker
+        self.nvram_write:    bool = True  # Write to hardware NVRAM
+        self.oc_timeout:      int = 5  #    Set OpenCore timeout
+        self.opencore_build:  str = "RELEASE"
 
         ## Kext Settings
-        self.kext_debug = False  # Enables Lilu debug and DebugEnhancer
-        self.kext_variant = "RELEASE"
+        self.kext_debug:  bool = False  # Enables Lilu debug and DebugEnhancer
+        self.kext_variant: str = "RELEASE"
 
         ## NVRAM Settings
-        self.verbose_debug = False  # -v
+        self.verbose_debug: bool = False  # -v
 
         ## SMBIOS Settings
-        self.custom_cpu_model = 2  #            Patch type value
-        self.custom_cpu_model_value = ""  #     New CPU name within About This Mac
-        self.serial_settings = "None"  #        Set SMBIOS level used
-        self.override_smbios = "Default"  #     Set SMBIOS model used
-        self.allow_native_spoofs = False  #     Allow native models to recieve spoofs
-        self.custom_serial_number = ""  #       Set SMBIOS serial number
-        self.custom_board_serial_number = ""  # Set SMBIOS board serial number
+        self.serial_settings:     str  = "None"  #    Set SMBIOS level used
+        self.override_smbios:     str  = "Default"  # Set SMBIOS model used
+        self.allow_native_spoofs: bool = False  #     Allow native models to recieve spoofs
+
+        ### RestrictEvents CPU renaming
+        self.custom_cpu_model:       int = 2  #  Patch type value
+        self.custom_cpu_model_value: str = ""  # New CPU name within About This Mac
+
+        ### Serial Number Overrides
+        self.custom_serial_number:       str = ""  # Set SMBIOS serial number
+        self.custom_board_serial_number: str = ""  # Set SMBIOS board serial number
 
         ## FeatureUnlock Settings
-        self.fu_status = True   #   Enable FeatureUnlock
-        self.fu_arguments = None  # Set FeatureUnlock arguments
+        self.fu_status:    bool = True  # Enable FeatureUnlock
+        self.fu_arguments: str  = None  # Set FeatureUnlock arguments
 
         ## Security Settings
-        self.apecid_support = False  #    ApECID
-        self.sip_status = True  #         System Integrity Protection
-        self.secure_status = False  #     Secure Boot Model
-        self.vault = False  #             EFI Vault
-        self.disable_cs_lv = False  #     Disable Library validation
-        self.disable_amfi = False  #      Disable AMFI
+        self.sip_status:     bool = True  #  System Integrity Protection
+        self.secure_status:  bool = False  # Secure Boot Model
+        self.vault:          bool = False  # EFI Vault
+        self.disable_cs_lv:  bool = False  # Disable Library validation
+        self.disable_amfi:   bool = False  # Disable AMFI
 
         ## OS Settings
-        self.os_support = 12.0
-        self.detected_os = 0  #          Major Kernel Version
-        self.detected_os_minor = 0  #    Minor Kernel Version
-        self.detected_os_build = ""  #   OS Build
-        self.detected_os_version = ""  # OS Version
+        self.os_support:        float = 12.0
+        self.detected_os:         int = 0  #  Major Kernel Version
+        self.detected_os_minor:   int = 0  #  Minor Kernel Version
+        self.detected_os_build:   str = ""  # OS Build
+        self.detected_os_version: str = ""  # OS Version
 
         ## Boot Volume Settings
-        self.firewire_boot = False  # Allow macOS FireWire Boot
-        self.nvme_boot = False  #     Allow UEFI NVMe Boot
-        self.xhci_boot = False
+        self.firewire_boot: bool = False  # Allow macOS FireWire Boot (kernel)
+        self.nvme_boot:     bool = False  # Allow UEFI NVMe Boot
+        self.xhci_boot:     bool = False  # Allow UEFI XHCI Boot
 
         ## Graphics Settings
-        self.metal_build = False  #          Set MXM Build support
-        self.imac_vendor = "None"  #         Set MXM GPU vendor
-        self.imac_model = "" #               Set MXM GPU model
-        self.drm_support = False  #          Set iMac14,x DRM support
-        self.allow_ts2_accel = True  #       Set TeraScale 2 Acceleration support
-        self.force_nv_web = False  #         Force Nvidia Web Drivers on Tesla and Kepler
-        self.force_output_support = False  # Force Output support for Mac Pros with PC VBIOS
+        self.allow_ts2_accel:             bool = True  #  Set TeraScale 2 Acceleration support
+        self.drm_support:                 bool = False  # Set iMac14,x DRM support
+        self.force_nv_web:                bool = False  # Force Nvidia Web Drivers on Tesla and Kepler
+        self.force_output_support:        bool = False  # Force Output support for Mac Pros with PC VBIOS
+        self.amd_gop_injection:           bool = False  # Set GOP Injection support
+        self.nvidia_kepler_gop_injection: bool = False  # Set Kepler GOP Injection support
 
-        ## Miscellaneous
-        self.disallow_cpufriend = False  #     Disable CPUFriend
-        self.enable_wake_on_wlan = False  #    Allow Wake on WLAN for modern Broadcom
-        self.disable_tb = False  #             Disable Thunderbolt Controller
-        self.set_alc_usage = True  #           Set AppleALC usage
-        self.dGPU_switch = False  #            Set Display GPU Switching for Windows
-        self.force_surplus = False  #          Force SurPlus patch in newer OSes
-        self.force_latest_psp = False  #       Force latest PatcherSupportPkg
-        self.disable_msr_power_ctl = False  #  Disable MSR Power Control (missing battery throttling)
-        self.software_demux = False  #         Enable Software Demux patch set
-        self.force_vmm = False  #              Force VMM patch
-        self.custom_sip_value = None  #        Set custom SIP value
-        self.walkthrough = False  #            Enable Walkthrough
-        self.disable_connectdrivers = False  # Disable ConnectDrivers (hibernation)
-        self.allow_3rd_party_drives = True   # Allow ThridPartyDrives quirk
-        self.set_content_caching = False  #    Set Content Caching
-        self.allow_nvme_fixing = True  #       Allow NVMe Kernel Space Patches
-        self.disable_xcpm = False  #           Disable XCPM (X86PlatformPlugin.kext)
-        self.root_patcher_succeeded = False  #  Determine if root patcher succeeded
-        self.booted_oc_disk = None  #          Determine current disk OCLP booted from
-        self.start_build_install = False  #    Determine if build install should be started
-        self.host_is_non_metal = False  #      Determine if host is non-metal (ie. enable UI hacks)
-        self.needs_to_open_preferences = False  # Determine if preferences need to be opened
-        self.host_is_hackintosh = False #     Determine if host is Hackintosh
-        self.commit_info = (None, None, None)
-        self.set_vmm_cpuid = False  #          Set VMM bit inside CPUID
-        self.oc_timeout = 5  #                 Set OpenCore timeout
+        ### MXM GPU Support
+        self.metal_build: bool = False  # Set MXM Build support
+        self.imac_vendor: str = "None"  # Set MXM GPU vendor
+        self.imac_model:  str = "" #      Set MXM GPU model
 
+        ## Miscellaneous build settings
+        self.disallow_cpufriend:     bool = False  # Disable CPUFriend
+        self.enable_wake_on_wlan:    bool = False  # Allow Wake on WLAN for modern Broadcom
+        self.disable_tb:             bool = False  # Disable Thunderbolt Controller
+        self.dGPU_switch:            bool = False  # Set Display GPU Switching for Windows
+        self.force_surplus:          bool = False  # Force SurPlus patch in newer OSes
+        self.force_latest_psp:       bool = False  # Force latest PatcherSupportPkg
+        self.disable_msr_power_ctl:  bool = False  # Disable MSR Power Control (missing battery throttling)
+        self.software_demux:         bool = False  # Enable Software Demux patch set
+        self.force_vmm:              bool = False  # Force VMM patch
+        self.disable_connectdrivers: bool = False  # Disable ConnectDrivers (hibernation)
+        self.set_content_caching:    bool = False  # Set Content Caching
+        self.disable_xcpm:           bool = False  # Disable XCPM (X86PlatformPlugin.kext)
+        self.set_vmm_cpuid:          bool = False  # Set VMM bit inside CPUID
+        self.set_alc_usage:          bool = True  #  Set AppleALC usage
+        self.allow_3rd_party_drives: bool = True  #  Allow ThridPartyDrives quirk
+        self.allow_nvme_fixing:      bool = True  #  Allow NVMe Kernel Space Patches
+        self.apfs_trim_timeout:      bool = True  #  Set APFS Trim timeout
+        self.custom_sip_value:        int = None  #  Set custom SIP value
+
+        ## Non-Metal OS support
         self.legacy_accel_support = [
             os_data.os_data.big_sur,
             os_data.os_data.monterey,
+            os_data.os_data.ventura,
         ]
 
     # Payload Location
@@ -249,6 +265,14 @@ class Constants:
         return self.payload_path / Path("Drivers/ExFatDxeLegacy.efi")
 
     @property
+    def amd_gop_driver_path(self):
+        return self.payload_path / Path("Drivers/AMDGOP.efi")
+
+    @property
+    def nvidia_kepler_gop_driver_path(self):
+        return self.payload_path / Path("Drivers/NVGOP_GK.efi")
+
+    @property
     def xhci_driver_path(self):
         return self.payload_path / Path("Drivers/XhciDxe.efi")
 
@@ -261,8 +285,8 @@ class Constants:
         return self.payload_path / Path("Drivers/diags.efi")
 
     @property
-    def list_txt_path(self):
-        return self.payload_path / Path("List.txt")
+    def link_rate_driver_path(self):
+        return self.payload_path / Path("Drivers/FixPCIeLinkRate.efi")
 
     @property
     def installer_sh_path(self):
@@ -282,6 +306,10 @@ class Constants:
         return self.payload_kexts_path / Path(f"Acidanthera/WhateverGreen-v{self.whatevergreen_version}-{self.kext_variant}.zip")
 
     @property
+    def whatevergreen_navi_path(self):
+        return self.payload_kexts_path / Path(f"Acidanthera/WhateverGreen-v{self.whatevergreen_navi_version}-{self.kext_variant}.zip")
+
+    @property
     def airportbcrmfixup_path(self):
         return self.payload_kexts_path / Path(f"Acidanthera/AirportBrcmFixup-v{self.airportbcrmfixup_version}-{self.kext_variant}.zip")
 
@@ -291,11 +319,7 @@ class Constants:
 
     @property
     def efi_disabler_path(self):
-        return self.payload_kexts_path / Path(f"Acidanthera/EFICheckDisabler-v{self.restrictevents_version}.zip")
-
-    @property
-    def restrictevents_mbp_path(self):
-        return self.payload_kexts_path / Path(f"Acidanthera/RestrictEvents-MBP91-v{self.restrictevents_mbp_version}-{self.kext_variant}.zip")
+        return self.payload_kexts_path / Path(f"Acidanthera/EFICheckDisabler.zip")
 
     @property
     def bcm570_path(self):
@@ -390,6 +414,10 @@ class Constants:
         return self.payload_kexts_path / Path(f"Misc/BacklightInjector-v{self.backlight_injector_version}.zip")
 
     @property
+    def backlight_injectorA_path(self):
+        return self.payload_kexts_path / Path(f"Misc/BacklightInjectorA-v{self.backlight_injectorA_version}.zip")
+
+    @property
     def cpufriend_path(self):
         return self.payload_kexts_path / Path(f"Acidanthera/CPUFriend-v{self.cpufriend_version}-{self.kext_variant}.zip")
 
@@ -434,8 +462,12 @@ class Constants:
         return self.payload_kexts_path / Path(f"Acidanthera/CryptexFixup-v{self.cryptexfixup_version}-{self.kext_variant}.zip")
 
     @property
+    def rsrhelper_path(self):
+        return self.payload_kexts_path / Path(f"Acidanthera/RSRHelper-v{self.rsrhelper_version}-{self.kext_variant}.zip")
+
+    @property
     def innie_path(self):
-        return self.payload_kexts_path / Path(f"Misc/Innie-v{self.innie_version}.zip")
+        return self.payload_kexts_path / Path(f"Misc/Innie-v{self.innie_version}-{self.kext_variant}.zip")
 
     @property
     def simplemsr_path(self):
@@ -456,6 +488,10 @@ class Constants:
     @property
     def apple_raid_path(self):
         return self.payload_kexts_path / Path(f"Misc/AppleRAIDCard-v{self.apple_raid_version}.zip")
+
+    @property
+    def kdkless_path(self):
+        return self.payload_kexts_path / Path(f"Misc/KDKlessWorkaround-v{self.kdkless_version}-{self.kext_variant}.zip")
 
     @property
     def plist_folder_path(self):
@@ -557,11 +593,7 @@ class Constants:
     # Tools
     @property
     def macserial_path(self):
-        return self.payload_path / Path("Tools/macserial")
-
-    @property
-    def gfxutil_path(self):
-        return self.payload_path / Path("Tools/gfxutil")
+        return self.payload_path / Path("OpenCore/macserial")
 
     @property
     def vault_path(self):
@@ -569,11 +601,15 @@ class Constants:
 
     @property
     def ocvalidate_path(self):
-        return self.payload_path / Path(f"Tools/ocvalidate-{self.opencore_version}")
+        return self.payload_path / Path(f"OpenCore/ocvalidate")
 
     @property
     def oclp_helper_path(self):
         return self.payload_path / Path("Tools/OCLP-Helper")
+
+    @property
+    def rsrrepair_userspace_path(self):
+        return self.payload_path / Path("Tools/RSRRepair")
 
     # Icons
     @property

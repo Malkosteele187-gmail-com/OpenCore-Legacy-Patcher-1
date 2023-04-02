@@ -1,34 +1,60 @@
 # Generate Default Data
-from resources import utilities, device_probe, generate_smbios, global_settings
-from data import smbios_data, cpu_data, os_data
 import subprocess
 
+from resources import (
+    utilities,
+    device_probe,
+    generate_smbios,
+    global_settings,
+    constants
+)
+from data import (
+    smbios_data,
+    cpu_data,
+    os_data
+)
 
-class generate_defaults:
 
-    def __init__(self, model, host_is_target, settings):
-        self.model =          model
-        self.constants =      settings
-        self.host_is_target = host_is_target
+class GenerateDefaults:
+
+    def __init__(self, model: str, host_is_target: bool, global_constants: constants.Constants) -> None:
+        self.constants: constants.Constants = global_constants
+
+        self.model: str = model
+
+        self.host_is_target: bool = host_is_target
 
         # Reset Variables
-        self.constants.sip_status =    True
-        self.constants.secure_status = False
-        self.constants.disable_cs_lv = False
-        self.constants.disable_amfi  = False
+        self.constants.sip_status:    bool = True
+        self.constants.secure_status: bool = False
+        self.constants.disable_cs_lv: bool = False
+        self.constants.disable_amfi:  bool = False
+        self.constants.fu_status:     bool = True
 
-        self.constants.custom_serial_number =       ""
-        self.constants.custom_board_serial_number = ""
+        self.constants.fu_arguments: str = None
 
-        self.general_probe()
-        self.nvram_probe()
-        self.gpu_probe()
-        self.networking_probe()
-        self.misc_hardwares_probe()
-        self.smbios_probe()
+        self.constants.custom_serial_number:       str = ""
+        self.constants.custom_board_serial_number: str = ""
+
+        if self.host_is_target is True:
+            for gpu in self.constants.computer.gpus:
+                if gpu.device_id_unspoofed == -1:
+                    gpu.device_id_unspoofed = gpu.device_id
+                if gpu.vendor_id_unspoofed == -1:
+                    gpu.vendor_id_unspoofed = gpu.vendor_id
+
+        self._general_probe()
+        self._nvram_probe()
+        self._gpu_probe()
+        self._networking_probe()
+        self._misc_hardwares_probe()
+        self._smbios_probe()
 
 
-    def general_probe(self):
+    def _general_probe(self) -> None:
+        """
+        General probe for data
+        """
 
         if "Book" in self.model:
             self.constants.set_content_caching = False
@@ -38,21 +64,14 @@ class generate_defaults:
         if self.model in ["MacBookPro8,2", "MacBookPro8,3"]:
             # Users disabling TS2 most likely have a faulty dGPU
             # users can override this in settings
-            ts2_status = global_settings.global_settings().read_property("MacBookPro_TeraScale_2_Accel")
+            ts2_status = global_settings.GlobalEnviromentSettings().read_property("MacBookPro_TeraScale_2_Accel")
             if ts2_status is True:
                 self.constants.allow_ts2_accel = True
             else:
-                global_settings.global_settings().write_property("MacBookPro_TeraScale_2_Accel", False)
+                global_settings.GlobalEnviromentSettings().write_property("MacBookPro_TeraScale_2_Accel", False)
                 self.constants.allow_ts2_accel = False
 
         if self.model in smbios_data.smbios_dictionary:
-            if smbios_data.smbios_dictionary[self.model]["CPU Generation"] < cpu_data.cpu_data.ivy_bridge.value and self.model != "MacPro5,1":
-                # Sidecar and AirPlay to Mac only blacklist Ivy and newer (as well as MacPro5,1)
-                # Avoid extra patching without benefit
-                self.constants.fu_arguments = " -disable_sidecar_mac"
-            else:
-                self.constants.fu_arguments = None
-
             if smbios_data.smbios_dictionary[self.model]["CPU Generation"] >= cpu_data.cpu_data.skylake.value:
                 # On 2016-2017 MacBook Pros, 15" devices used a stock Samsung SSD with IONVMeController
                 # Technically this should be patched based on NVMeFix.kext logic,
@@ -66,14 +85,19 @@ class generate_defaults:
         # Check if running in RecoveryOS
         self.constants.recovery_status = utilities.check_recovery()
 
-        if global_settings.global_settings().read_property("Force_Web_Drivers") is True:
+        if global_settings.GlobalEnviromentSettings().read_property("Force_Web_Drivers") is True:
             self.constants.force_nv_web = True
 
-        result = global_settings.global_settings().read_property("ShouldNukeKDKs")
+        result = global_settings.GlobalEnviromentSettings().read_property("ShouldNukeKDKs")
         if result is False:
             self.constants.should_nuke_kdks = False
 
-    def smbios_probe(self):
+
+    def _smbios_probe(self) -> None:
+        """
+        SMBIOS specific probe
+        """
+
         if not self.host_is_target:
             if self.model in ["MacPro4,1", "MacPro5,1"]:
                 # Allow H.265 on AMD
@@ -104,7 +128,11 @@ class generate_defaults:
                     self.constants.force_vmm = False
 
 
-    def nvram_probe(self):
+    def _nvram_probe(self) -> None:
+        """
+        NVRAM specific probe
+        """
+
         if not self.host_is_target:
             return
 
@@ -125,20 +153,52 @@ class generate_defaults:
             self.constants.custom_cpu_model_value = custom_cpu_model_value.split("%00")[0]
 
 
-    def networking_probe(self):
-        if (
-            isinstance(self.constants.computer.wifi, device_probe.Broadcom) and
-            self.constants.computer.wifi.chipset in [device_probe.Broadcom.Chipsets.AirPortBrcm4331, device_probe.Broadcom.Chipsets.AirPortBrcm43224]
-        ) or (
-            isinstance(self.constants.computer.wifi, device_probe.Atheros) and
-            self.constants.computer.wifi.chipset == device_probe.Atheros.Chipsets.AirPortAtheros40
-        ):
-            # 12.0: Legacy Wireless chipsets require root patching
-            self.constants.sip_status = False
-            self.constants.secure_status = False
+    def _networking_probe(self) -> None:
+        """
+        Networking specific probe
+        """
+
+        if self.host_is_target:
+            if not (
+                (
+                    isinstance(self.constants.computer.wifi, device_probe.Broadcom) and
+                    self.constants.computer.wifi.chipset in [
+                        device_probe.Broadcom.Chipsets.AirPortBrcm4331,
+                        device_probe.Broadcom.Chipsets.AirPortBrcm43224,
+                    ]
+                ) or (
+                    isinstance(self.constants.computer.wifi, device_probe.Atheros) and
+                    self.constants.computer.wifi.chipset == device_probe.Atheros.Chipsets.AirPortAtheros40
+                )
+            ):
+                return
+
+        else:
+            if not self.model in smbios_data.smbios_dictionary:
+                return
+            if (
+                smbios_data.smbios_dictionary[self.model]["Wireless Model"] not in [
+                    device_probe.Broadcom.Chipsets.AirPortBrcm4331,
+                    device_probe.Broadcom.Chipsets.AirPortBrcm43224,
+                    device_probe.Atheros.Chipsets.AirPortAtheros40
+                ]
+            ):
+                return
+
+        # 12.0: Legacy Wireless chipsets require root patching
+        self.constants.sip_status = False
+        self.constants.secure_status = False
+
+        # 13.0: Enabling AirPlay to Mac patches breaks Control Center on legacy chipsets
+        # AirPlay to Mac was unsupported regardless, so we can safely disable it
+        self.constants.fu_status = True
+        self.constants.fu_arguments = " -disable_sidecar_mac"
 
 
-    def misc_hardwares_probe(self):
+    def _misc_hardwares_probe(self) -> None:
+        """
+        Misc probe
+        """
         if self.host_is_target:
             if self.constants.computer.usb_controllers:
                 if self.model in smbios_data.smbios_dictionary:
@@ -151,7 +211,11 @@ class generate_defaults:
                                 break
 
 
-    def gpu_probe(self):
+    def _gpu_probe(self) -> None:
+        """
+        Graphics specific probe
+        """
+
         gpu_dict = []
         if self.host_is_target:
             gpu_dict = self.constants.computer.gpus
@@ -177,14 +241,23 @@ class generate_defaults:
                 device_probe.AMD.Archs.Legacy_GCN_8000,
                 device_probe.AMD.Archs.Legacy_GCN_9000,
                 device_probe.AMD.Archs.Polaris,
+                device_probe.AMD.Archs.Polaris_Spoof,
                 device_probe.AMD.Archs.Vega,
                 device_probe.AMD.Archs.Navi,
             ]:
+                if gpu in [
+                    device_probe.Intel.Archs.Ivy_Bridge,
+                    device_probe.Intel.Archs.Haswell,
+                    device_probe.NVIDIA.Archs.Kepler,
+                ]:
+                    self.constants.disable_amfi = True
+
                 if gpu in [
                         device_probe.AMD.Archs.Legacy_GCN_7000,
                         device_probe.AMD.Archs.Legacy_GCN_8000,
                         device_probe.AMD.Archs.Legacy_GCN_9000,
                         device_probe.AMD.Archs.Polaris,
+                        device_probe.AMD.Archs.Polaris_Spoof,
                         device_probe.AMD.Archs.Vega,
                         device_probe.AMD.Archs.Navi,
                 ]:
@@ -202,6 +275,7 @@ class generate_defaults:
                 # See if system can use the native AMD stack in Ventura
                 if gpu in [
                     device_probe.AMD.Archs.Polaris,
+                    device_probe.AMD.Archs.Polaris_Spoof,
                     device_probe.AMD.Archs.Vega,
                     device_probe.AMD.Archs.Navi,
                 ]:
@@ -235,12 +309,8 @@ class generate_defaults:
                     # Only disable AMFI if we officially support Ventura
                     self.constants.disable_amfi = True
 
-                if self.host_is_target:
-                    self.constants.host_is_non_metal = True
-                    # If a Mac is non-Metal based, Beta Blur is highly recommended
-                    if self.constants.detected_os >= os_data.os_data.big_sur:
-                        for arg in ["Moraea_BlurBeta"]:
-                            # If user explicitly set the blur, don't override
-                            arg_result = subprocess.run(["defaults", "read", "-g", arg], stdout=subprocess.PIPE).stdout.decode("utf-8").strip()
-                            if arg_result not in ["true", "1", "false", "0"]:
-                                subprocess.run(["defaults", "write", "-g", arg, "-bool", "TRUE"])
+                for key in ["Moraea_BlurBeta", "Amy.MenuBar2Beta"]:
+                    # Enable BetaBlur if user hasn't disabled it
+                    is_key_enabled = subprocess.run(["defaults", "read", "-g", key], stdout=subprocess.PIPE).stdout.decode("utf-8").strip()
+                    if is_key_enabled not in ["false", "0"]:
+                        subprocess.run(["defaults", "write", "-g", key, "-bool", "true"])

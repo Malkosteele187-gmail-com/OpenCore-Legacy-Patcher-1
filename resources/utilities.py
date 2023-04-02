@@ -1,6 +1,5 @@
-# Copyright (C) 2020-2022, Dhinak G, Mykola Grymalyuk
+# Copyright (C) 2020-2023, Dhinak G, Mykola Grymalyuk
 
-import hashlib
 import math
 import os
 import plistlib
@@ -9,17 +8,14 @@ from pathlib import Path
 import os
 import binascii
 import argparse
-from ctypes import CDLL, c_uint, byref
-import time
 import atexit
-import requests
 import shutil
-import urllib.parse
+import py_sip_xnu
 
-from resources import constants, ioreg, amfi_detect
+import logging
+
+from resources import constants, ioreg
 from data import sip_data, os_data
-
-SESSION = requests.Session()
 
 
 def hexswap(input_hex: str):
@@ -39,8 +35,8 @@ def string_to_hex(input_string):
 
 def process_status(process_result):
     if process_result.returncode != 0:
-        print(f"Process failed with exit code {process_result.returncode}")
-        print(f"Please file an issue on our Github")
+        logging.info(f"Process failed with exit code {process_result.returncode}")
+        logging.info(f"Please report the issue on the Discord server")
         raise Exception(f"Process result: \n{process_result.stdout.decode()}")
 
 
@@ -55,11 +51,11 @@ def human_fmt(num):
 def header(lines):
     lines = [i for i in lines if i is not None]
     total_length = len(max(lines, key=len)) + 4
-    print("#" * (total_length))
+    logging.info("#" * (total_length))
     for line in lines:
         left_side = math.floor(((total_length - 2 - len(line.strip())) / 2))
-        print("#" + " " * left_side + line.strip() + " " * (total_length - len("#" + " " * left_side + line.strip()) - 1) + "#")
-    print("#" * total_length)
+        logging.info("#" + " " * left_side + line.strip() + " " * (total_length - len("#" + " " * left_side + line.strip()) - 1) + "#")
+    logging.info("#" * total_length)
 
 
 RECOVERY_STATUS = None
@@ -102,24 +98,9 @@ def check_filesystem_type():
     filesystem_type = plistlib.loads(subprocess.run(["diskutil", "info", "-plist", "/"], stdout=subprocess.PIPE).stdout.decode().strip().encode())
     return filesystem_type["FilesystemType"]
 
-def csr_dump():
-    # Based off sip_config.py
-    # https://gist.github.com/pudquick/8b320be960e1654b908b10346272326b
-    # https://opensource.apple.com/source/xnu/xnu-7195.141.2/libsyscall/wrappers/csr.c.auto.html
-    # Far more reliable than parsing NVRAM's csr-active-config (ie. user can wipe it, boot.efi can strip bits)
-
-    # Note that 'csr_get_active_config' was not introduced until 10.11
-    try:
-        libsys = CDLL('/usr/lib/libSystem.dylib')
-        raw    = c_uint(0)
-        errmsg = libsys.csr_get_active_config(byref(raw))
-        return raw.value
-    except AttributeError:
-        return 0
-
 
 def csr_decode(os_sip):
-    sip_int = csr_dump()
+    sip_int = py_sip_xnu.SipXnu().get_sip_status().value
     for i,  current_sip_bit in enumerate(sip_data.system_integrity_protection.csr_values):
         if sip_int & (1 << i):
             sip_data.system_integrity_protection.csr_values[current_sip_bit] = True
@@ -139,7 +120,7 @@ sleep_process = None
 
 def disable_sleep_while_running():
     global sleep_process
-    print("- Disabling Idle Sleep")
+    logging.info("- Disabling Idle Sleep")
     if sleep_process is None:
         # If sleep_process is active, we'll just keep it running
         sleep_process = subprocess.Popen(["caffeinate", "-d", "-i", "-s"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -149,7 +130,7 @@ def disable_sleep_while_running():
 def enable_sleep_after_running():
     global sleep_process
     if sleep_process:
-        print("- Re-enabling Idle Sleep")
+        logging.info("- Re-enabling Idle Sleep")
         sleep_process.kill()
         sleep_process = None
 
@@ -298,7 +279,7 @@ def cls():
         if not check_recovery():
             os.system("cls" if os.name == "nt" else "clear")
         else:
-            print("\u001Bc")
+            logging.info("\u001Bc")
 
 def check_command_line_tools():
     # Determine whether Command Line Tools exist
@@ -375,122 +356,6 @@ def get_firmware_vendor(*, decode: bool = False):
             value = value.strip("\0")
     return value
 
-def verify_network_connection(url):
-    try:
-        response = SESSION.head(url, timeout=5, allow_redirects=True)
-        return True
-    except (requests.exceptions.Timeout, requests.exceptions.TooManyRedirects, requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
-        return False
-
-def download_file(link, location, is_gui=None, verify_checksum=False):
-    if verify_network_connection(link):
-        disable_sleep_while_running()
-        base_name = Path(link).name
-
-        if Path(location).exists():
-            Path(location).unlink()
-
-        head_response = SESSION.head(link, allow_redirects=True)
-        try:
-            # Handle cases where Content-Length has garbage or is missing
-            total_file_size = int(head_response.headers['Content-Length'])
-        except KeyError:
-            total_file_size = 0
-
-        if total_file_size > 1024:
-            file_size_rounded = round(total_file_size / 1024 / 1024, 2)
-            file_size_string = f" of {file_size_rounded}MB"
-
-            # Check if we have enough space
-            if total_file_size > get_free_space():
-                print(f"Not enough space to download {base_name} ({file_size_rounded}MB)")
-                return False
-        else:
-            file_size_string = ""
-
-        response = SESSION.get(link, stream=True)
-
-        # SU Catalog's link is quite long, strip to make it bearable
-        if "sucatalog.gz" in base_name:
-            base_name = "sucatalog.gz"
-
-        header = f"# Downloading: {base_name} #"
-        box_length = len(header)
-        box_string = "#" * box_length
-        dl = 0
-        total_downloaded_string = ""
-        global clear
-        with location.open("wb") as file:
-            count = 0
-            start = time.perf_counter()
-            for chunk in response.iter_content(1024 * 1024 * 4):
-                dl += len(chunk)
-                file.write(chunk)
-                count += len(chunk)
-                if is_gui is None:
-                    if clear:
-                        cls()
-                        print(box_string)
-                        print(header)
-                        print(box_string)
-                        print("")
-                if total_file_size > 1024:
-                    total_downloaded_string = f" ({round(float(dl / total_file_size * 100), 2)}%)"
-                print(f"{round(count / 1024 / 1024, 2)}MB Downloaded{file_size_string}{total_downloaded_string}\nAverage Download Speed: {round(dl//(time.perf_counter() - start) / 100000 / 8, 2)} MB/s")
-
-        if verify_checksum is True:
-            # Verify checksum
-            # Note that this can be quite taxing on slower Macs
-            checksum = hashlib.sha256()
-            with location.open("rb") as file:
-                chunk = file.read(1024 * 1024 * 16)
-                while chunk:
-                    checksum.update(chunk)
-                    chunk = file.read(1024 * 1024 * 16)
-            enable_sleep_after_running()
-            return checksum
-        enable_sleep_after_running()
-        return True
-    else:
-        cls()
-        header = "# Could not establish Network Connection with provided link! #"
-        box_length = len(header)
-        box_string = "#" * box_length
-        print(box_string)
-        print(header)
-        print(box_string)
-        if constants.Constants().url_patcher_support_pkg in link:
-            # If we're downloading PatcherSupportPkg, present offline build
-            print("\nPlease grab the offline variant of OpenCore Legacy Patcher from Github:")
-            print(f"https://github.com/dortania/OpenCore-Legacy-Patcher/releases/download/{constants.Constants().patcher_version}/OpenCore-Patcher-TUI-Offline.app.zip")
-        else:
-            print(link)
-        return None
-
-
-def download_apple_developer_portal(link, location, is_gui=None, verify_checksum=False):
-    TOKEN_URL_BASE = "https://developerservices2.apple.com/services/download?path="
-    remote_path = urllib.parse.urlparse(link).path
-    token_url = urllib.parse.urlunparse(urllib.parse.urlparse(TOKEN_URL_BASE)._replace(query=urllib.parse.urlencode({"path": remote_path})))
-
-    try:
-        response = SESSION.get(token_url, timeout=5)
-    except (requests.exceptions.Timeout, requests.exceptions.TooManyRedirects, requests.exceptions.ConnectionError):
-        print(" - Could not contact Apple download servers")
-        return None
-
-    try:
-        response.raise_for_status()
-    except requests.exceptions.HTTPError:
-        if response.status_code == 400 and "The path specified is invalid" in response.text:
-            print(" - File does not exist on Apple download servers")
-        else:
-            print(" - Could not request download authorization from Apple download servers")
-        return None
-
-    return download_file(link, location, is_gui, verify_checksum)
-
-
 def dump_constants(constants):
     with open(os.path.join(os.path.expanduser('~'), 'Desktop', 'internal_data.txt'), 'w') as f:
         f.write(str(vars(constants)))
@@ -557,9 +422,19 @@ def find_disk_off_uuid(uuid):
     return None
 
 def get_free_space(disk=None):
+    """
+    Get free space on disk in bytes
+
+    Parameters:
+        disk (str): Path to mounted disk (or folder on disk)
+
+    Returns:
+        int: Free space in bytes
+    """
     if disk is None:
         disk = "/"
-    total, used, free = shutil.disk_usage("/")
+
+    total, used, free = shutil.disk_usage(disk)
     return free
 
 def grab_mount_point_from_disk(disk):
@@ -575,16 +450,6 @@ def monitor_disk_output(disk):
     output = output[-2]
     return output
 
-def validate_link(link):
-    # Check if link is 404
-    try:
-        response = SESSION.head(link, timeout=5, allow_redirects=True)
-        if response.status_code == 404:
-            return False
-        else:
-            return True
-    except (requests.exceptions.Timeout, requests.exceptions.TooManyRedirects, requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
-        return False
 
 def block_os_updaters():
     # Disables any processes that would be likely to mess with
@@ -604,7 +469,7 @@ def block_os_updaters():
         for bad_process in bad_processes:
             if bad_process in current_process:
                 if pid != "":
-                    print(f"- Killing Process: {pid} - {current_process.split('/')[-1]}")
+                    logging.info(f"- Killing Process: {pid} - {current_process.split('/')[-1]}")
                     subprocess.run(["kill", "-9", pid])
                     break
 

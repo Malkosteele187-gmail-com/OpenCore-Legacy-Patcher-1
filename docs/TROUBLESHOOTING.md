@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Here are some common errors users may experience while using this patcher:
+Here are some common errors that users may experience while using this patcher:
 
 * [OpenCore Legacy Patcher not launching](#opencore-legacy-patcher-not-launching)
 * [Stuck on `This version of Mac OS X is not supported on this platform`](#stuck-on-this-version-of-mac-os-x-is-not-supported-on-this-platform)
@@ -19,7 +19,7 @@ Here are some common errors users may experience while using this patcher:
 * [Cannot Disable SIP in recoveryOS](#cannot-disable-sip-in-recoveryos)
 * [Stuck on "Less than a minute remaining..."](#stuck-on-less-than-a-minute-remaining)
 * [No acceleration after a Metal GPU swap on Mac Pro](#no-acceleration-after-a-metal-gpu-swap-on-mac-pro)
-
+* [Keyboard, Mouse and Trackpad not working in installer or after update](#keyboard-mouse-and-trackpad-not-working-in-installer-or-after-update)
 
 
 ## OpenCore Legacy Patcher not launching
@@ -46,7 +46,7 @@ Reminder that once this is done, you'll need to select OpenCore in the boot pick
 
 With OpenCore Legacy Patcher, we rely on Apple Secure Boot to ensure OS updates work correctly and reliably with Big Sur. However this installs NVRAM variables that will confuse your Mac if not running with OpenCore. To resolve this, simply uninstall OpenCore and [reset NVRAM](https://support.apple.com/en-mide/HT201255).
 
-* Note: Machines with modded root volumes will also result in an infinite recovery loop until integrity is restored.
+* Note: Machines with modified root volumes will also result in an infinite recovery loop until integrity is restored.
 
 ## Reboot when entering Hibernation (`Sleep Wake Failure`)
 
@@ -92,11 +92,11 @@ As a work-around, we recommend users try out the below app:
 
 With OCLP v0.2.5, we've added support for legacy Wi-Fi on Monterey. However, some users may have noticed that they can't connect to wireless networks.
 
-To work-around this, we recommend that users manually connect using the "other" option in the Wi-Fi menu bar or manually adding the network in the "Network" preference pane.
+To work-around this, we recommend that users manually connect using the "Other" option in the Wi-Fi menu bar or manually adding the network in the "Network" preference pane.
 
 ## No Graphics Acceleration
 
-In macOS, GPU drivers are often dropped from the OS with each major release of it. With macOS Big Sur, currently all non-Metal GPUs require additional patches to gain acceleration. In addition, macOS Monterey removed Graphics Drivers for both Intel Ivy Bridge and NVIDIA Kepler graphics processors. 
+In macOS, GPU drivers are often dropped from the OS with each major release of it. With macOS Big Sur, currently, all non-Metal GPUs require additional patches to gain acceleration. In addition, macOS Monterey removed Graphics Drivers for both Intel Ivy Bridge and NVIDIA Kepler graphics processors. 
 
 If you're using OCLP v0.4.4, you should have been prompted to install Root Volume patches after the first boot from installation of macOS. If you need to do this manually, you can do so within the patcher app. Once rebooted, acceleration will be re-enabled as well as brightness control for laptops.
 
@@ -151,7 +151,7 @@ Because of this, we recommend placing a USB 2.0/3.0 hub between your devices and
 
 A common area for systems to get "stuck", namely for units that are missing the `AES` CPU instruction/older mobile hardware. During this stage, a lot of heavy cryptography is performed, which can make systems appear to be stuck. In reality they are working quite hard to finish up the installation.
 
-Because this step can take a few hours or more depending on drive speeds, be patient at this stage and do not manually power off or reboot your machine as this will break the installation and require you to reinstall. If you think your system has stalled, press the Caps Lock key. If the light turns on, your system is busy.
+Because this step can take a few hours or more depending on drive speeds, be patient at this stage and do not manually power off or reboot your machine as this will break the installation and require you to reinstall. If you think your system has stalled, press the Caps Lock key. If the light turns on, your system is busy and not actually frozen.
 
 ## No acceleration after a Metal GPU swap on Mac Pro
 
@@ -161,3 +161,26 @@ Alternatively, you can remove "AutoPkg-Assets.pkg" from /Library/Packages on the
 
 The reason for this is that the autopatcher will assume that you will be using the original graphics card and therefore does non-metal patching, which includes removing some drivers for other cards. This causes Metal cards to not accelerate after swapping.
 
+## Keyboard, Mouse and Trackpad not working in installer or after update
+
+For Macs using legacy USB 1.1 controllers, OpenCore Legacy Patcher can only restore support once it has performed root volume patches. Thus to install macOS, you need to hook up a USB hub between your Mac and Keyboard/Mouse.
+
+* For MacBook users, you'll need to find an external keyboard/mouse in addition to the USB hub
+
+More information can be found here:
+
+* [Legacy UHCI/OHCI support in Ventura #1021](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1021)
+
+Applicable models include:
+
+| Family      | Year                 | Model                         | Notes                                            |
+| :---------- | :--------------------| :---------------------------- | :----------------------------------------------- |
+| MacBook     | Mid 2010 and older   | MacBook4,1 - MacBook7,1       |                                                  |
+| MacBook Air | Late 2010 and older  | MacBookAir2,1 - MacBookAir3,x |                                                  |
+| MacBook Pro | Mid 2010 and older   | MacBookPro4,1 - MacBookPro7,x | Excludes Mid 2010 15" and 17" (MacBookPro6,x)    |
+| iMac        | Late 2009 and older  | iMac7,1 - iMac10,x            | Excludes Core i5/7 27" late 2009 iMac (iMac11,1) |
+| Mac mini    | Mid 2011 and older   | Macmini3,1 - Macmini5,x       |                                                  |
+| Mac Pro     | Mid 2010 and older   | MacPro3,1 - MacPro5,1         |                                                  |
+
+
+![](../images/usb11-chart.png)
